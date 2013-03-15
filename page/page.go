@@ -27,30 +27,19 @@ type Page struct {
 	Settings settings.Page
 }
 
-// Result from Page.download() method, wrapped because of timeout implementation.
-type result struct {
-	node *html.Node
-	err  error
-}
-
 // Check downloads the page, extracts the wanted selection and makes a comparison
 // with a previous check to determine if the page has been updated. Check takes
 // an error channel to send errors to be printed.
 func (p *Page) Check(ch chan<- error) {
-	// A buffered channel with size 1.
-	downloadOrTimeoutChan := make(chan *result, 1)
-
-	// Returned result from download.
-	var r *result
-
-	// Download page.
-	go func() { downloadOrTimeoutChan <- p.errWrapDownload() }()
-
 	// Retrieve result from download or return timeout error.
+	var r struct {
+		*html.Node
+		error
+	}
 	select {
-	case r = <-downloadOrTimeoutChan:
-		if r.err != nil {
-			ch <- r.err
+	case r = <-p.errWrapDownload():
+		if r.error != nil {
+			ch <- r.error
 			return
 		}
 	case <-time.After(settings.TimeoutDuration):
@@ -59,7 +48,7 @@ func (p *Page) Check(ch chan<- error) {
 	}
 
 	// Extract selection from downloaded source.
-	selection, err := p.makeSelection(r.node)
+	selection, err := p.makeSelection(r.Node)
 	if err != nil {
 		ch <- err
 		return
@@ -110,7 +99,7 @@ func (p *Page) Check(ch chan<- error) {
 			// output look better.
 			mailPage := Page{p.ReqUrl, p.Settings}
 			mailPage.Settings.StripFuncs = nil
-			sel, err := mailPage.makeSelection(r.node)
+			sel, err := mailPage.makeSelection(r.Node)
 			if err != nil {
 				ch <- err
 				return
@@ -135,12 +124,23 @@ func (p *Page) Check(ch chan<- error) {
 
 // An error wrapping convenience function for p.download() used because of
 // timeout implementation.
-func (p *Page) errWrapDownload() *result {
+// Credits to: Dave Cheney and ilyia (https://groups.google.com/forum/?fromgroups=#!topic/golang-nuts/cTrBcyjqCxg)
+func (p *Page) errWrapDownload() <-chan struct {
+	*html.Node
+	error
+} {
 	doc, err := p.download()
-	return &result{
-		doc,
-		err,
-	}
+	result := make(chan struct {
+		*html.Node
+		error
+	})
+	go func() {
+		result <- struct {
+			*html.Node
+			error
+		}{doc, err}
+	}()
+	return result
 }
 
 // Download the page with or without user specified headers.
