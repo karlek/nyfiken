@@ -170,7 +170,7 @@ func (p *Page) download() (doc *html.Node, err error) {
 	defer resp.Body.Close()
 
 	// If response contained a client or server error, fail with that error.
-	if resp.StatusCode > 400 {
+	if resp.StatusCode >= 400 {
 		return nil, errorsutil.ErrorfColor("%s: (%d) - %s", p.ReqUrl.String(), resp.StatusCode, resp.Status)
 	}
 
