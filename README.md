@@ -62,6 +62,7 @@ Settings
 --------
 The settings available are:
 [G] - Definable in global scope
+
 [S] - Site specific settings
 
 [G] - Newline
