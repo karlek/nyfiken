@@ -2,11 +2,21 @@
 // usable as filenames.
 package filename
 
-// Removes linux filename hostile characters.
+import "fmt"
+
+var (
+	ErrInvalidFileNameLength = "Invalid filename length: %d - max length is: %d"
+)
+
+const (
+	Ext4MaxLength = 255
+)
+
+// Encodes linux filename hostile characters.
 // Blacklisted:
 //	`/`
 //	`\0`
-func Linux(unencoded string) (clean string) {
+func LinuxEncode(unencoded string) (clean string, err error) {
 	for _, chr := range unencoded {
 		switch chr {
 		case '/':
@@ -17,5 +27,52 @@ func Linux(unencoded string) (clean string) {
 			clean += string(chr)
 		}
 	}
-	return clean
+
+	lenClean := len(clean)
+	if lenClean > 255 {
+		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+	}
+	return clean, nil
+}
+
+// Removes linux filename hostile characters.
+// Blacklisted:
+//	`/`
+//	`\0`
+func LinuxStrip(unencoded string) (clean string, err error) {
+	for _, chr := range unencoded {
+		switch chr {
+		case '/', 0x00:
+			continue
+		default:
+			clean += string(chr)
+		}
+	}
+
+	lenClean := len(clean)
+	if lenClean > 255 {
+		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+	}
+	return clean, nil
+}
+
+// Replaces linux filename hostile characters with user supplied string.
+// Blacklisted:
+//	`/`
+//	`\0`
+func LinuxReplace(unencoded, replace string) (clean string, err error) {
+	for _, chr := range unencoded {
+		switch chr {
+		case '/', 0x00:
+			clean += replace
+		default:
+			clean += string(chr)
+		}
+	}
+
+	lenClean := len(clean)
+	if lenClean > 255 {
+		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+	}
+	return clean, nil
 }

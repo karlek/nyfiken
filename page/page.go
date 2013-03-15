@@ -55,7 +55,7 @@ func (p *Page) Check(ch chan<- error) {
 	}
 
 	// File name is a escaped URL in a cache folder.
-	cachePathName := settings.CacheRoot + filename.Linux(p.ReqUrl.String()) + ".htm"
+	cachePathName := settings.CacheRoot + filename.LinuxEncode(p.ReqUrl.String()) + ".htm"
 
 	// Read in comparison.
 	buf, err := ioutil.ReadFile(cachePathName)

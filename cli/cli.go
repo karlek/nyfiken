@@ -99,6 +99,7 @@ func takeInput(conn net.Conn, outerErrChan chan error) {
 	outerErrChan <- nil
 }
 
+// Check all pages immediately
 func forceUpdate() (err error) {
 	pages, err := ini.ReadPages(settings.PagesPath)
 	if err != nil {
