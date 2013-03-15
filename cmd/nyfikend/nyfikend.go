@@ -9,6 +9,7 @@ import "time"
 
 import "github.com/karlek/nyfiken/cli"
 import "github.com/karlek/nyfiken/ini"
+import "github.com/karlek/nyfiken/settings"
 
 // Error wrapper.
 func main() {
@@ -25,7 +26,7 @@ func nyfikend() (err error) {
 	go cli.Listen()
 	for ; ; secondsElapsed++ {
 		// Retrieve an array of pages from INI file and read settings.
-		pages, err := ini.ReadIni()
+		pages, err := ini.ReadIni(settings.ConfigPath, settings.PagesPath)
 		if err != nil {
 			return err
 		}

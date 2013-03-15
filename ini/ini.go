@@ -76,12 +76,29 @@ var (
 	errInvalidListDeclaration = "Use `<` instead of `=` for list values"
 )
 
-// Reads config file and updates settings.Global.
-func ReadSettings() (err error) {
+// Read config file which in turn updates settings.Global and returns a slice of
+// all pages to scrape.
+func ReadIni(configPath, pagesPath string) (pages []*page.Page, err error) {
+	// Read config.
+	err = ReadSettings(configPath)
+	if err != nil {
+		return nil, err
+	}
 
+	// Read pages file.
+	pages, err = ReadPages(pagesPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return pages, nil
+}
+
+// Reads config file and updates settings.Global.
+func ReadSettings(configPath string) (err error) {
 	// Parse config file.
 	file := ini.New()
-	err = file.Load(settings.ConfigPath)
+	err = file.Load(configPath)
 	if err != nil {
 		return errorsutil.ErrorfColor("%s", err)
 	}
@@ -179,11 +196,11 @@ func parseMail(mail ini.Section) (err error) {
 }
 
 // Reads pages file and returns a slice of pages.
-func ReadPages() (pages []*page.Page, err error) {
+func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 
 	// Parse pages file.
 	file := ini.New()
-	err = file.Load(settings.PagesPath)
+	err = file.Load(pagesPath)
 	if err != nil {
 		return nil, errorsutil.ErrorfColor("%s", err)
 	}
@@ -263,25 +280,6 @@ func ReadPages() (pages []*page.Page, err error) {
 
 		// Append to the pages array.
 		pages = append(pages, &p)
-	}
-
-	return pages, nil
-}
-
-// Read config file which in turn updates settings.Global and returns a slice of
-// all pages to scrape.
-func ReadIni() (pages []*page.Page, err error) {
-
-	// Read config.
-	err = ReadSettings()
-	if err != nil {
-		return nil, err
-	}
-
-	// Read pages file.
-	pages, err = ReadPages()
-	if err != nil {
-		return nil, err
 	}
 
 	return pages, nil

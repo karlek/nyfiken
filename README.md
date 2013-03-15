@@ -61,6 +61,7 @@ The pages.ini can have several sections in this format:
 Settings
 --------
 The settings available are:
+
 [G] - Definable in global scope
 
 [S] - Site specific settings
@@ -170,6 +171,10 @@ Further selection is performed in this order.
         - Strip (number, attrs, html)
             - Regexp
                 - Negexp
+
+API documentation
+-----------------
+http://go.pkgdoc.org/github.com/karlek/nyfiken
 
 Public domain
 -------------

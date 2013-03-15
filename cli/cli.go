@@ -100,7 +100,7 @@ func takeInput(conn net.Conn, outerErrChan chan error) {
 }
 
 func forceUpdate() (err error) {
-	pages, err := ini.ReadPages()
+	pages, err := ini.ReadPages(settings.PagesPath)
 	if err != nil {
 		return err
 	}
