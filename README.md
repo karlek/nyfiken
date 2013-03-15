@@ -1,35 +1,35 @@
 nyfiken
 =======
-Nyfiken means curious in Swedish. Nyfikend is a daemon which will periodically check for updates on a list of URLs and send a notification to the user when it happens.
+Nyfiken means curious in Swedish. Nyfikend is a daemon which will periodically check for updates on a list of URLs and send a notification to the user when it happens. Nyfikenc is client which interacts with the daemon.
 
 Installation
 ------------
     go install github.com/karlek/nyfiken/cmd/nyfikend
-	mkdir ~/.config/nyfiken
+    mkdir ~/.config/nyfiken
 	mv $GOPATH/src/github.com/karlek/nyfiken/config.ini $GOPATH/src/github.com/karlek/nyfiken/pages.ini ~/.config/nyfiken
 
 Security
 --------
 #### Warning: there exists some known security plausible scenarios.
-If an attacker can modify nyfiken config or pages file; nyfiken can be used to:
+If an attacker can modify a nyfiken pages file; nyfiken can be used to:
 
     - Perform all web-based attacks based on HTTP requests.
     - Scan the network for web-servers or routers and, via site-specific mail-setting, gain access to the information.
 
 Nyfiken(c/d)
 ------------
-Nyfikenc is a client to access the updated information from nyfikend. It can be used to force the program to check all pages again, clear all updates and to open them in a browser.
+Nyfikenc is a client to access the updated information from nyfikend. It can be used to force the program to check all pages again, clear all logged updates and to open them in a browser.
 
 Nyfiken(c/d) communicates on port `5239` by default.
 
 Config
 ------
-Settings are defined in either default, global or site specific scope. Site specific settings will always overwrite the global or default and global will overwrite default settings.
+Settings are defined in either global or site specific scope. Site specific settings will always overwrite the global or default and global will overwrite default settings.
 
     Default values
     --------------
     // Default interval between updates unless overwritten in config file.
-	DefaultInterval = 1 * time.Minute
+    DefaultInterval = 1 * time.Minute
 
 	// Default permissions to create files: user read and write permissions.
 	DefaultFilePerms = os.FileMode(0600)
@@ -46,15 +46,17 @@ The config and pages file is in the INI format.
 Sections are case-sensitive.
 
 The config.ini file has two types of sections.
-`[settings]`
-Contains global settings for the program.
 
-`[mail]`
-Contains mail information to send and receive updates.
+	[settings]
+	Contains global settings for the program.
+
+	[mail]
+	Contains mail information to send and receive updates.
 
 The pages.ini can have several sections in this format:
-`[http://pagename.tld]`
-Any number of pages to check if they have changed. Settings under this section will be referenced as site specific.
+
+	[http://pagename.tld]
+    Any number of pages to check when they update. Settings under this section will be referenced as site-specific.
 
 Settings
 --------
@@ -77,7 +79,7 @@ Newline is parsed as a string.
 
 [G] - Fileperms
 ---------------
-Change what permissions files are created with. Default value is 0600 -user read and write.
+Change what permissions files are created with. Default value is 0600 - user read and write.
 Fileperms is parsed as int.
 
     fileperms = 0777
