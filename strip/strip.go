@@ -59,7 +59,7 @@ func HTML(doc *html.Node) (newSel string) {
 	var f func(*html.Node, *string)
 	f = func(node *html.Node, newSel *string) {
 		if node.Type == html.TextNode {
-			*newSel += strings.TrimSpace(node.Data) + settings.Global.Newline
+			*newSel += strings.TrimSpace(node.Data) + settings.Newline
 		}
 
 		for c := node.FirstChild; c != nil; c = c.NextSibling {

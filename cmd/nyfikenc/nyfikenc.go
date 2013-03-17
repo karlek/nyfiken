@@ -9,6 +9,7 @@ import "flag"
 import "fmt"
 import "net"
 
+import "github.com/karlek/nyfiken/ini"
 import "github.com/karlek/nyfiken/settings"
 import "github.com/mewkiz/pkg/bufioutil"
 
@@ -100,15 +101,13 @@ func nyfikenc() (err error) {
 
 // Opens all links with browser.
 func readAll(bw *bufioutil.Writer, br *bufioutil.Reader, ups map[settings.Update]bool) (err error) {
-	// Ask nyfikend for browser path
-	_, err = bw.WriteLine(settings.QueryAskForBrowser)
+	// Read in config file to settings.Global
+	err = ini.ReadSettings(settings.ConfigPath)
 	if err != nil {
 		return err
 	}
 
-	// Reads response from nyfikend
-	browser, err := br.ReadLine()
-	if browser == "" {
+	if settings.Global.Browser == "" {
 		fmt.Println("No browser path set in:", settings.ConfigPath)
 		return nil
 	}
@@ -121,7 +120,7 @@ func readAll(bw *bufioutil.Writer, br *bufioutil.Reader, ups map[settings.Update
 
 	// Loop through all updates and open them with the browser
 	for up, _ := range ups {
-		cmd := exec.Command(browser, up.ReqUrl)
+		cmd := exec.Command(settings.Global.Browser, up.ReqUrl)
 		err := cmd.Start()
 		if err != nil {
 			return err
@@ -132,7 +131,7 @@ func readAll(bw *bufioutil.Writer, br *bufioutil.Reader, ups map[settings.Update
 		}
 	}
 
-	fmt.Println("Opening all updates with:", browser)
+	fmt.Println("Opening all updates with:", settings.Global.Browser)
 	return nil
 }
 
@@ -156,6 +155,6 @@ func force(bw *bufioutil.Writer) (err error) {
 		return err
 	}
 
-	fmt.Println("All pages will now be checked!")
+	fmt.Println("Pages will be checked immediately by your demand.")
 	return nil
 }

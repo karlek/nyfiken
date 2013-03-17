@@ -31,7 +31,6 @@ type Prog struct {
 	RecvMail   string        // Mail address to send a notification when a page has been updated.
 	StripFuncs []string      // Strip functions to further specify what to select.
 	FilePerms  os.FileMode   // Permissions to create files with.
-	Newline    string        // Newline character.
 	PortNum    string        // On which port should the nyfikenc/d communication take place.
 	Browser    string        // The path to the browser to open updates in.
 
@@ -46,10 +45,9 @@ type Prog struct {
 
 const (
 	// Queries sent from the client to the daemon.
-	QueryClearAll      = "clear all!"
-	QueryForceRecheck  = "recheck!"
-	QueryUpdates       = "updates?"
-	QueryAskForBrowser = "browser?"
+	QueryClearAll     = "clear all!"
+	QueryForceRecheck = "recheck!"
+	QueryUpdates      = "updates?"
 
 	// Default interval between updates unless overwritten in config file.
 	DefaultInterval = 1 * time.Minute
@@ -58,7 +56,7 @@ const (
 	DefaultFilePerms = os.FileMode(0600)
 
 	// Default newline character
-	DefaultNewline = "\n"
+	Newline = "\n"
 
 	// Default port number for nyfikenc/d connection.
 	DefaultPortNum = ":5239"
@@ -81,7 +79,6 @@ var (
 	Global = Prog{
 		Interval:  DefaultInterval,
 		FilePerms: DefaultFilePerms,
-		Newline:   DefaultNewline,
 		PortNum:   DefaultPortNum,
 	}
 )

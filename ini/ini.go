@@ -24,7 +24,6 @@ const (
 	fieldSleepStart     = "sleepstart"
 	fieldRecvMail       = "recvmail"
 	fieldFilePerms      = "fileperms"
-	fieldNewline        = "newline"
 	fieldSendMail       = "sendmail"
 	fieldSendPass       = "sendpass"
 	fieldSendAuthServer = "sendauthserver"
@@ -59,7 +58,6 @@ var (
 		fieldInterval:  true,
 		fieldBrowser:   true,
 		fieldPortNum:   true,
-		fieldStrip:     true,
 		fieldFilePerms: true,
 	}
 
@@ -140,9 +138,6 @@ func parseSettings(config ini.Section) (err error) {
 
 	// Set global file permissions.
 	settings.Global.FilePerms = os.FileMode(config.I(fieldFilePerms, int(settings.DefaultFilePerms)))
-
-	// Set global newline character.
-	settings.Global.Newline = config.S(fieldNewline, settings.DefaultNewline)
 
 	// Set port number.
 	settings.Global.PortNum = config.S(fieldPortNum, settings.DefaultPortNum)

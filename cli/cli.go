@@ -76,11 +76,6 @@ func takeInput(conn net.Conn, outerErrChan chan error) {
 				}
 			case settings.QueryClearAll:
 				settings.Updates = make(map[settings.Update]bool)
-			case settings.QueryAskForBrowser:
-				_, err := bufioutil.NewWriter(conn).WriteLine(settings.Global.Browser)
-				if err != nil {
-					outerErrChan <- err
-				}
 			case settings.QueryForceRecheck:
 				err := forceUpdate()
 				if err != nil {

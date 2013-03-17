@@ -22,6 +22,20 @@ Nyfikenc is a client to access the updated information from nyfikend. It can be 
 
 Nyfiken(c/d) communicates on port `5239` by default.
 
+Nyfikenc Usage
+--------------
+	$ nyfikenc
+	Sorry, no updates :(
+	$ nyfikenc -f
+	Pages will be checked immediately by your demand.
+	$ nyfikenc
+	http://example.com/
+	http...
+	$ nyfikenc -r
+	Opening all updates with: /usr/bin/...
+	$ nyfikenc -c
+	Updates list has been cleared!
+
 Config
 ------
 Settings are defined in either global or site specific scope. Site specific settings will always overwrite the global or default and global will overwrite default settings.
@@ -35,7 +49,7 @@ Settings are defined in either global or site specific scope. Site specific sett
 	DefaultFilePerms = os.FileMode(0600)
 
 	// Default newline character
-	DefaultNewline = "\n"
+	Newline = "\n"
 
 	// Default port number for nyfikenc/d connection.
 	DefaultPortNum = ":5239"
@@ -65,19 +79,6 @@ The settings available are:
 [G] - Definable in global scope
 
 [S] - Site specific settings
-
-[G] - Newline
--------------
-Depending on your system or software, different newline characters are used.
-Default newline value is `\n`.
-
-    Windows   = \r\n
-    Linux     = \n
-    Macintosh = \r
-
-Newline is parsed as a string.
-
-    newline = \r
 
 [G] - Fileperms
 ---------------

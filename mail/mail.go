@@ -28,7 +28,7 @@ Content-Transfer-Encoding: 8bit
 Content-Type: text/html; charset="UTF-8"
 
 ` + `<a href="` + pageUrl.String() + `">` + pageUrl.String() + `</a> has been updated :) <hr>
-` + body + `</body><html>` + settings.Global.Newline
+` + body + `</body><html>` + settings.Newline
 
 	err = smtp.SendMail(
 		settings.Global.SenderMail.OutServer, // Outgoing server.

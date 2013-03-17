@@ -55,7 +55,12 @@ func (p *Page) Check(ch chan<- error) {
 	}
 
 	// File name is a escaped URL in a cache folder.
-	cachePathName := settings.CacheRoot + filename.LinuxEncode(p.ReqUrl.String()) + ".htm"
+	linuxPath, err := filename.LinuxEncode(p.ReqUrl.String())
+	if err != nil {
+		ch <- err
+		return
+	}
+	cachePathName := settings.CacheRoot + linuxPath + ".htm"
 
 	// Read in comparison.
 	buf, err := ioutil.ReadFile(cachePathName)
@@ -99,6 +104,7 @@ func (p *Page) Check(ch chan<- error) {
 			// output look better.
 			mailPage := Page{p.ReqUrl, p.Settings}
 			mailPage.Settings.StripFuncs = nil
+			mailPage.Settings.Regexp = ""
 			sel, err := mailPage.makeSelection(r.Node)
 			if err != nil {
 				ch <- err
@@ -267,7 +273,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 
 		selection = ""
 		for _, res := range result {
-			selection += res + settings.Global.Newline
+			selection += res + settings.Newline
 		}
 	}
 
