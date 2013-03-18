@@ -2,14 +2,16 @@
 // user.
 package main
 
-import "log"
-import "math"
-import "runtime"
-import "time"
+import (
+	"log"
+	"math"
+	"runtime"
+	"time"
 
-import "github.com/karlek/nyfiken/cli"
-import "github.com/karlek/nyfiken/ini"
-import "github.com/karlek/nyfiken/settings"
+	"github.com/karlek/nyfiken/cli"
+	"github.com/karlek/nyfiken/ini"
+	"github.com/karlek/nyfiken/settings"
+)
 
 // Error wrapper.
 func main() {
@@ -23,6 +25,8 @@ func nyfikend() (err error) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	var secondsElapsed float64
+
+	// Listen for nyfikenc queries.
 	go cli.Listen()
 	for ; ; secondsElapsed++ {
 		// Retrieve an array of pages from INI file and read settings.

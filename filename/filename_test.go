@@ -1,8 +1,10 @@
 // Test cases for filename
 package filename
 
-import "testing"
-import "fmt"
+import (
+	"fmt"
+	"testing"
+)
 
 // Tests LinuxEncode
 func TestLinuxEncode(t *testing.T) {

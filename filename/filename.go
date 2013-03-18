@@ -2,7 +2,9 @@
 // usable as filenames.
 package filename
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var (
 	ErrInvalidFileNameLength = "Invalid filename length: %d - max length is: %d"

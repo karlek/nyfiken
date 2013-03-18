@@ -6,12 +6,14 @@
 // This package seeks to solve these kind of problems.
 package strip
 
-import "strings"
-import "unicode"
+import (
+	"strings"
+	"unicode"
 
-import "code.google.com/p/go.net/html"
-import "github.com/karlek/nyfiken/settings"
-import "github.com/mewkiz/pkg/htmlutil"
+	"code.google.com/p/go.net/html"
+	"github.com/karlek/nyfiken/settings"
+	"github.com/mewkiz/pkg/htmlutil"
+)
 
 // Returns a number free string.
 func Numbers(doc *html.Node) (newSel string) {

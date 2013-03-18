@@ -1,14 +1,16 @@
 // Test cases for ini package.
 package ini
 
-import "testing"
-import "os"
-import "time"
-import "fmt"
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+	"os"
+	"testing"
+	"time"
 
-import "github.com/karlek/nyfiken/settings"
-import "github.com/karlek/nyfiken/page"
+	"github.com/karlek/nyfiken/page"
+	"github.com/karlek/nyfiken/settings"
+)
 
 // Tests ReadSettings
 func TestReadSettings(t *testing.T) {
@@ -17,7 +19,6 @@ func TestReadSettings(t *testing.T) {
 		Interval:  10 * time.Minute,
 		RecvMail:  "global@example.com",
 		FilePerms: os.FileMode(0777),
-		Newline:   "\\r\\n",
 		PortNum:   ":4113",
 		Browser:   "/usr/bin/browser",
 
@@ -36,14 +37,14 @@ func TestReadSettings(t *testing.T) {
 
 	err := ReadSettings("ini_test_config.ini")
 	if err != nil {
-		t.FailNow()
+		t.Errorf("%s", err)
 	}
 
 	/// "invalid operation: expected != settings.Global (struct containing []string cannot be compared)"
 	/// Need to find a better way to compare slices.
 	/// Ugly solution
 	if fmt.Sprintf("%v", settings.Global) != fmt.Sprintf("%v", expected) {
-		t.FailNow()
+		t.Errorf("Unexpected output")
 	}
 }
 
@@ -52,12 +53,12 @@ func TestReadPages(t *testing.T) {
 
 	reqUrl, err := url.Parse("http://example.org")
 	if err != nil {
-		t.FailNow()
+		t.Errorf("%s", err)
 	}
 
 	anotherReqUrl, err := url.Parse("http://another.example.org")
 	if err != nil {
-		t.FailNow()
+		t.Errorf("%s", err)
 	}
 
 	expected := []*page.Page{
@@ -92,14 +93,12 @@ func TestReadPages(t *testing.T) {
 
 	pages, err := ReadPages("ini_test_pages.ini")
 	if err != nil {
-		t.Fatalf("%s\n", err)
-		t.FailNow()
+		t.Errorf("%s", err)
 	}
-
 	/// Need to find a better way to compare slices.
 	/// Ugly solution
 	if len(expected) != len(pages) {
-		t.FailNow()
+		t.Errorf("Unexpected output")
 	}
 	for _, expectedP := range expected {
 		pageFound := false
@@ -111,16 +110,14 @@ func TestReadPages(t *testing.T) {
 				p.Settings.Regexp == expectedP.Settings.Regexp &&
 				p.Settings.RecvMail == expectedP.Settings.RecvMail &&
 				p.Settings.Selection == expectedP.Settings.Selection &&
-				p.Settings.Threshold == expectedP.Settings.Threshold {
-				if isStripFuncsEqual(p.Settings.StripFuncs, expectedP.Settings.StripFuncs) &&
-					isHeadersEqual(p.Settings.Header, expectedP.Settings.Header) {
-					pageFound = true
-				}
+				p.Settings.Threshold == expectedP.Settings.Threshold &&
+				isStripFuncsEqual(p.Settings.StripFuncs, expectedP.Settings.StripFuncs) &&
+				isHeadersEqual(p.Settings.Header, expectedP.Settings.Header) {
 				pageFound = true
 			}
 		}
 		if !pageFound {
-			t.FailNow()
+			t.Errorf("Unexpected output")
 		}
 	}
 }

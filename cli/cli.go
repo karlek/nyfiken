@@ -1,14 +1,16 @@
 // Package cli handles command-line input for nyfikenc/d communication.
 package cli
 
-import "encoding/gob"
-import "net"
-import "log"
+import (
+	"encoding/gob"
+	"log"
+	"net"
 
-import "github.com/karlek/nyfiken/settings"
-import "github.com/karlek/nyfiken/ini"
-import "github.com/mewkiz/pkg/errorsutil"
-import "github.com/mewkiz/pkg/bufioutil"
+	"github.com/karlek/nyfiken/ini"
+	"github.com/karlek/nyfiken/settings"
+	"github.com/mewkiz/pkg/bufioutil"
+	"github.com/mewkiz/pkg/errorsutil"
+)
 
 // Listen makes the server wait for a connection from a client.
 func Listen() {
@@ -24,7 +26,6 @@ func Listen() {
 			if err != nil {
 				log.Fatalln(errorsutil.ErrorfColor("%s", err))
 			}
-			continue
 		}
 
 		// Listen for errors from connection.

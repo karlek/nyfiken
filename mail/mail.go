@@ -1,11 +1,13 @@
 // Package mail notifies the user about updates on checked pages.
 package mail
 
-import "net/smtp"
-import "net/url"
+import (
+	"net/smtp"
+	"net/url"
 
-import "github.com/karlek/nyfiken/settings"
-import "github.com/mewkiz/pkg/errorsutil"
+	"github.com/karlek/nyfiken/settings"
+	"github.com/mewkiz/pkg/errorsutil"
+)
 
 // Send sends a mail to a mail address with the updates of the checked page and
 // the URL to the checked page.

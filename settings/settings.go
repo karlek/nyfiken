@@ -1,11 +1,13 @@
 // Package settings contains default- and user-settings for nyfikenc/d.
 package settings
 
-import "os"
-import "log"
-import "time"
+import (
+	"log"
+	"os"
+	"time"
 
-import "github.com/mewkiz/pkg/osutil"
+	"github.com/mewkiz/pkg/osutil"
+)
 
 // When an update is found, log it incase we get asked by nyfikenc for updates.
 type Update struct {

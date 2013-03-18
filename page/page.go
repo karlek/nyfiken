@@ -1,24 +1,27 @@
 // Package page contains functions which checks if a page has been updated.
 package page
 
-import "io/ioutil"
-import "net/http"
-import "net/url"
-import "os"
-import "regexp"
-import "strings"
-import "time"
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"regexp"
+	"strings"
+	"time"
 
-import "code.google.com/p/cascadia"
-import "code.google.com/p/go.net/html"
-import "code.google.com/p/mahonia"
-import "github.com/karlek/nyfiken/filename"
-import "github.com/karlek/nyfiken/mail"
-import "github.com/karlek/nyfiken/settings"
-import "github.com/karlek/nyfiken/strip"
-import "github.com/karlek/nyfiken/strmetr"
-import "github.com/mewkiz/pkg/errorsutil"
-import "github.com/mewkiz/pkg/htmlutil"
+	"code.google.com/p/cascadia"
+	"code.google.com/p/go.net/html"
+	"code.google.com/p/mahonia"
+	"github.com/karlek/nyfiken/filename"
+	"github.com/karlek/nyfiken/mail"
+	"github.com/karlek/nyfiken/settings"
+	"github.com/karlek/nyfiken/strip"
+	"github.com/karlek/nyfiken/strmetr"
+	"github.com/mewkiz/pkg/errorsutil"
+	"github.com/mewkiz/pkg/htmlutil"
+)
 
 // Pages are checked if they have changed and based on user settings
 // special selections are made to eliminate false-positives.
@@ -43,7 +46,7 @@ func (p *Page) Check(ch chan<- error) {
 			return
 		}
 	case <-time.After(settings.TimeoutDuration):
-		ch <- errorsutil.ErrorfColor("timeout: %s", p.ReqUrl.String())
+		ch <- fmt.Errorf("timeout: %s", p.ReqUrl.String())
 		return
 	}
 
@@ -152,9 +155,6 @@ func (p *Page) errWrapDownload() <-chan struct {
 // Download the page with or without user specified headers.
 func (p *Page) download() (doc *html.Node, err error) {
 
-	// Client to preform the requests.
-	var client = http.DefaultClient
-
 	// Construct the request.
 	req, err := http.NewRequest("GET", p.ReqUrl.String(), nil)
 	if err != nil {
@@ -169,7 +169,7 @@ func (p *Page) download() (doc *html.Node, err error) {
 	}
 
 	// Do request and read response.
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, errorsutil.ErrorfColor("%s", err)
 	}
@@ -188,7 +188,7 @@ func (p *Page) download() (doc *html.Node, err error) {
 
 	// Fix charset problems with servers that doesn't use utf-8
 	charset := "utf-8"
-	s := string(buf)
+	content := string(buf)
 
 	types := strings.Split(resp.Header.Get("Content-Type"), ` `)
 	for _, typ := range types {
@@ -200,10 +200,10 @@ func (p *Page) download() (doc *html.Node, err error) {
 		}
 	}
 	if charset != "utf-8" {
-		s = mahonia.NewDecoder(charset).ConvertString(s)
+		content = mahonia.NewDecoder(charset).ConvertString(content)
 	}
 	// Parse response into html.Node.
-	return html.Parse(strings.NewReader(s))
+	return html.Parse(strings.NewReader(content))
 }
 
 // Select from the retrived page source the CSS selection defined in c4c.ini.

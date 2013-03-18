@@ -29,10 +29,10 @@ Nyfikenc Usage
 	$ nyfikenc -f
 	Pages will be checked immediately by your demand.
 	$ nyfikenc
-	http://example.com/
+	http://example.org/
 	http...
 	$ nyfikenc -r
-	Opening all updates with: /usr/bin/...
+	Opening all updates with: /usr/bin/browser
 	$ nyfikenc -c
 	Updates list has been cleared!
 

@@ -1,15 +1,17 @@
 // Package ini adds functionality to retrieve configuration from INI files.
 package ini
 
-import "net/url"
-import "os"
-import "strings"
-import "time"
+import (
+	"net/url"
+	"os"
+	"strings"
+	"time"
 
-import "github.com/jteeuwen/ini"
-import "github.com/karlek/nyfiken/page"
-import "github.com/karlek/nyfiken/settings"
-import "github.com/mewkiz/pkg/errorsutil"
+	"github.com/jteeuwen/ini"
+	"github.com/karlek/nyfiken/page"
+	"github.com/karlek/nyfiken/settings"
+	"github.com/mewkiz/pkg/errorsutil"
+)
 
 const (
 	// INI sections (i.e. [sectionName]).

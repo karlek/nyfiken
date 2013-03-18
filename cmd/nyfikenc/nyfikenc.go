@@ -1,17 +1,19 @@
 // A client program to check and handle updates from nyfiken daemon.
 package main
 
-import "os/exec"
-import "os"
-import "encoding/gob"
-import "log"
-import "flag"
-import "fmt"
-import "net"
+import (
+	"encoding/gob"
+	"flag"
+	"fmt"
+	"log"
+	"net"
+	"os"
+	"os/exec"
 
-import "github.com/karlek/nyfiken/ini"
-import "github.com/karlek/nyfiken/settings"
-import "github.com/mewkiz/pkg/bufioutil"
+	"github.com/karlek/nyfiken/ini"
+	"github.com/karlek/nyfiken/settings"
+	"github.com/mewkiz/pkg/bufioutil"
+)
 
 // command-line flags
 var flagRecheck bool
