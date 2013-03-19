@@ -1,4 +1,3 @@
-// Test cases for ini package.
 package ini
 
 import (
@@ -37,28 +36,26 @@ func TestReadSettings(t *testing.T) {
 
 	err := ReadSettings("ini_test_config.ini")
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("ReadSettings: %s", err)
 	}
 
 	/// "invalid operation: expected != settings.Global (struct containing []string cannot be compared)"
 	/// Need to find a better way to compare slices.
 	/// Ugly solution
 	if fmt.Sprintf("%v", settings.Global) != fmt.Sprintf("%v", expected) {
-		t.Errorf("Unexpected output")
+		t.Errorf("output %v != %v", settings.Global, expected)
 	}
 }
 
 // Tests ReadPages
 func TestReadPages(t *testing.T) {
-
 	reqUrl, err := url.Parse("http://example.org")
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("url.Parse: %s", err)
 	}
-
 	anotherReqUrl, err := url.Parse("http://another.example.org")
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("url.Parse: %s", err)
 	}
 
 	expected := []*page.Page{
@@ -93,31 +90,47 @@ func TestReadPages(t *testing.T) {
 
 	pages, err := ReadPages("ini_test_pages.ini")
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("ReadPages: %s", err)
 	}
 	/// Need to find a better way to compare slices.
 	/// Ugly solution
 	if len(expected) != len(pages) {
-		t.Errorf("Unexpected output")
+		t.Errorf("output length (%d) != (%d) expected length", len(pages), len(expected))
 	}
 	for _, expectedP := range expected {
 		pageFound := false
 		for _, p := range pages {
+			// If error message is only page not found, two or more pages have
+			// only different URLs.
+			if *p.ReqUrl != *expectedP.ReqUrl {
+				continue
+			}
+
 			// Compare all fields that have defined equality.
-			if *p.ReqUrl == *expectedP.ReqUrl &&
-				p.Settings.Interval == expectedP.Settings.Interval &&
-				p.Settings.Negexp == expectedP.Settings.Negexp &&
-				p.Settings.Regexp == expectedP.Settings.Regexp &&
-				p.Settings.RecvMail == expectedP.Settings.RecvMail &&
-				p.Settings.Selection == expectedP.Settings.Selection &&
-				p.Settings.Threshold == expectedP.Settings.Threshold &&
-				isStripFuncsEqual(p.Settings.StripFuncs, expectedP.Settings.StripFuncs) &&
-				isHeadersEqual(p.Settings.Header, expectedP.Settings.Header) {
+			switch {
+			case p.Settings.Interval != expectedP.Settings.Interval:
+				t.Errorf("interval output %v != %v", p.Settings.Interval, expectedP.Settings.Interval)
+			case p.Settings.Negexp != expectedP.Settings.Negexp:
+				t.Errorf("Negexp output %v != %v", p.Settings.Negexp, expectedP.Settings.Negexp)
+			case p.Settings.Regexp != expectedP.Settings.Regexp:
+				t.Errorf("Regexp output %v != %v", p.Settings.Regexp, expectedP.Settings.Regexp)
+			case p.Settings.RecvMail != expectedP.Settings.RecvMail:
+				t.Errorf("RecvMail output %v != %v", p.Settings.RecvMail, expectedP.Settings.RecvMail)
+			case p.Settings.Selection != expectedP.Settings.Selection:
+				t.Errorf("Selection output %v != %v", p.Settings.Selection, expectedP.Settings.Selection)
+			case p.Settings.Threshold != expectedP.Settings.Threshold:
+				t.Errorf("Threshold output %v != %v", p.Settings.Threshold, expectedP.Settings.Threshold)
+			case !isStripFuncsEqual(p.Settings.StripFuncs, expectedP.Settings.StripFuncs):
+				t.Errorf("StripFuncs output %v != %v", p.Settings.StripFuncs, expectedP.Settings.StripFuncs)
+			case !isHeadersEqual(p.Settings.Header, expectedP.Settings.Header):
+				t.Errorf("Header output %v != %v", p.Settings.Header, expectedP.Settings.Header)
+			default:
 				pageFound = true
+				break
 			}
 		}
 		if !pageFound {
-			t.Errorf("Unexpected output")
+			t.Errorf("Page not found")
 		}
 	}
 }

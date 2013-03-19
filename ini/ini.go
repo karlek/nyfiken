@@ -158,14 +158,6 @@ func parseMail(mail ini.Section) (err error) {
 		}
 	}
 
-	// Set global receive mail.
-	settings.Global.RecvMail = mail.S(fieldRecvMail, "")
-	if settings.Global.RecvMail == "" {
-		return errorsutil.ErrorfColor(errMailAddressNotFound)
-	} else if !strings.Contains(settings.Global.RecvMail, "@") {
-		return errorsutil.ErrorfColor(errInvalidMailAddress, settings.Global.RecvMail)
-	}
-
 	// Set global sender mail.
 	settings.Global.SenderMail.Address = mail.S(fieldSendMail, "")
 	if settings.Global.SenderMail.Address == "" {
@@ -187,6 +179,14 @@ func parseMail(mail ini.Section) (err error) {
 	settings.Global.SenderMail.OutServer = mail.S(fieldSendOutServer, "")
 	if settings.Global.SenderMail.OutServer == "" {
 		return errorsutil.ErrorfColor(errMailOutServerNotFound)
+	}
+
+	// Set global receive mail.
+	settings.Global.RecvMail = mail.S(fieldRecvMail, "")
+	if settings.Global.RecvMail == "" {
+		return errorsutil.ErrorfColor(errMailAddressNotFound)
+	} else if !strings.Contains(settings.Global.RecvMail, "@") {
+		return errorsutil.ErrorfColor(errInvalidMailAddress, settings.Global.RecvMail)
 	}
 
 	return nil

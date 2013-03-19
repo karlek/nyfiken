@@ -96,7 +96,8 @@ func init() {
 func initialize() (err error) {
 	Updates = make(map[Update]bool)
 
-	NyfikenRoot = os.Getenv("HOME") + "/.config/nyfiken/"
+	// Will set nyfiken root differently depending on operating system.
+	setNyfikenRoot()
 	ConfigPath = NyfikenRoot + "config.ini"
 	PagesPath = NyfikenRoot + "pages.ini"
 	CacheRoot = NyfikenRoot + "cache/"

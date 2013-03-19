@@ -58,7 +58,7 @@ func (p *Page) Check(ch chan<- error) {
 	}
 
 	// File name is a escaped URL in a cache folder.
-	linuxPath, err := filename.LinuxEncode(p.ReqUrl.String())
+	linuxPath, err := filename.Encode(p.ReqUrl.String())
 	if err != nil {
 		ch <- err
 		return

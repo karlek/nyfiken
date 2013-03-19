@@ -1,4 +1,3 @@
-// Test cases for filename
 package filename
 
 import (
@@ -14,15 +13,15 @@ func TestLinuxEncode(t *testing.T) {
 		"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfa/": "",
 	}
 
-	for inp, exptected := range inputAndExptected {
+	for inp, expected := range inputAndExptected {
 		output, err := LinuxEncode(inp)
 		if err != nil {
 			if err.Error() != fmt.Sprintf(ErrInvalidFileNameLength, 256, Ext4MaxLength) {
-				t.FailNow()
+				t.Errorf("output `%v` != expected `%v`", err.Error(), fmt.Sprintf(ErrInvalidFileNameLength, 256, Ext4MaxLength))
 			}
 		}
-		if output != exptected {
-			t.FailNow()
+		if output != expected {
+			t.Errorf("output `%v` != expected `%v`", output, expected)
 		}
 	}
 }
@@ -35,41 +34,43 @@ func TestLinuxStrip(t *testing.T) {
 		"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf": "",
 	}
 
-	for inp, exptected := range inputAndExptected {
+	for inp, expected := range inputAndExptected {
 		output, err := LinuxStrip(inp)
 		if err != nil {
 			if err.Error() != fmt.Sprintf(ErrInvalidFileNameLength, 256, Ext4MaxLength) {
-				t.FailNow()
+				t.Errorf("output `%v` != expected `%v`", err.Error(), fmt.Sprintf(ErrInvalidFileNameLength, 256, Ext4MaxLength))
 			}
 			continue
 		}
-		if output != exptected {
-			t.FailNow()
+		if output != expected {
+			t.Errorf("output `%v` != expected `%v`", output, expected)
 		}
 	}
 }
 
 // Tests LinuxReplace
 func TestLinuxReplace(t *testing.T) {
-	type input struct {
-		filename    string
-		replacement string
-	}
-	inputAndExptected := map[input]string{
-		input{"asdf/", "?"}:               "asdf?",
-		input{"asdf" + string(0x00), "?"}: "asdf?",
-		input{"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfas/", "qwerty"}: "",
+	var testTable = []struct {
+		in struct {
+			filename    string
+			replacement string
+		}
+		out string
+	}{
+		{{"asdf/", "?"}, "asdf?"},
+		{{"asdf" + string(0x00), "?"}, "asdf?"},
+		{{"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfas/", "qwerty"}, ""},
 	}
 
-	for inp, exptected := range inputAndExptected {
+	for inp, expected := range testTable {
 		output, err := LinuxReplace(inp.filename, inp.replacement)
 		if err != nil {
 			if err.Error() != fmt.Sprintf(ErrInvalidFileNameLength, 260, Ext4MaxLength) {
-				t.FailNow()
+				t.Errorf("output `%v` != expected `%v`", err.Error(), fmt.Sprintf(ErrInvalidFileNameLength, 260, Ext4MaxLength))
 			}
 		}
-		if output != exptected {
-			t.FailNow()
+		if output != expected {
+			t.Errorf("output `%v` != expected `%v`", output, expected)
 		}
 	}
 }
