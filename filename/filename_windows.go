@@ -1,5 +1,8 @@
 // Package filename filters disallowed characters from strings to make them
 // usable as filenames.
+//
+// *Warning* - Filename is not safe to use since all restrictions have not been
+// added.
 package filename
 
 import (
@@ -24,23 +27,23 @@ const (
 func Encode(unencoded string) (clean string, err error) {
 	for _, chr := range unencoded {
 		switch chr {
-		case `\\`:
+		case '\\':
 			clean += `%5c`
-		case `/`:
+		case '/':
 			clean += `%2f`
-		case `:`:
+		case ':':
 			clean += `%3a`
-		case `*`:
+		case '*':
 			clean += `%2a`
-		case `?`:
+		case '?':
 			clean += `%3f`
-		case `"`:
+		case '"':
 			clean += `%22`
-		case `<`:
+		case '<':
 			clean += `%3c`
-		case `>`:
+		case '>':
 			clean += `%3e`
-		case `|`:
+		case '|':
 			clean += `%7c`
 		default:
 			clean += string(chr)
@@ -68,7 +71,7 @@ func Encode(unencoded string) (clean string, err error) {
 func Strip(unencoded string) (clean string, err error) {
 	for _, chr := range unencoded {
 		switch chr {
-		case `\\`, `/`, `:`, `*`, `?`, `"`, `<`, `>`, `|`:
+		case '\\', '/', ':', '*', '?', '"', '<', '>', '|':
 			continue
 		default:
 			clean += string(chr)
@@ -96,7 +99,7 @@ func Strip(unencoded string) (clean string, err error) {
 func Replace(unencoded, replace string) (clean string, err error) {
 	for _, chr := range unencoded {
 		switch chr {
-		case `\\`, `/`, `:`, `*`, `?`, `"`, `<`, `>`, `|`:
+		case '\\', '/', ':', '*', '?', '"', '<', '>', '|':
 			clean += replace
 		default:
 			clean += string(chr)

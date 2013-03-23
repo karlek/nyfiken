@@ -114,12 +114,12 @@ func initialize() (err error) {
 		}
 	}
 
-	found, err = osutil.Exists(PagesPath)
+	found, err = osutil.Exists(CacheRoot)
 	if err != nil {
 		return err
 	}
 	if !found {
-		err := os.Mkdir(PagesPath, DefaultFilePerms)
+		err := os.Mkdir(CacheRoot, DefaultFilePerms)
 		if err != nil {
 			return err
 		}
