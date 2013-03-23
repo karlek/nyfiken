@@ -17,8 +17,7 @@ import (
 
 // Returns a number free string.
 func Numbers(doc *html.Node) (newSel string) {
-	var f func(*html.Node)
-	f = func(node *html.Node) {
+	f := func(node *html.Node) {
 		if node.Type == html.TextNode {
 			text := strings.TrimSpace(node.Data)
 			var newSel string
@@ -41,8 +40,7 @@ func Numbers(doc *html.Node) (newSel string) {
 
 // Returns a string with empty HTML attributes.
 func Attrs(doc *html.Node) (newSel string) {
-	var f func(*html.Node)
-	f = func(node *html.Node) {
+	f := func(node *html.Node) {
 		if node.Type == html.ElementNode {
 			node.Attr = nil
 		}
@@ -58,8 +56,7 @@ func Attrs(doc *html.Node) (newSel string) {
 
 // Returns a HTML free string.
 func HTML(doc *html.Node) (newSel string) {
-	var f func(*html.Node, *string)
-	f = func(node *html.Node, newSel *string) {
+	f := func(node *html.Node, newSel *string) {
 		if node.Type == html.TextNode {
 			*newSel += strings.TrimSpace(node.Data) + settings.Newline
 		}
