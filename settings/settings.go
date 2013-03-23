@@ -102,7 +102,7 @@ func initialize() (err error) {
 	PagesPath = NyfikenRoot + "pages.ini"
 	CacheRoot = NyfikenRoot + "cache/"
 
-	// Create a nyifken config folder if it doesn't exist.
+	// Create a nyfiken config folder if it doesn't exist.
 	found, err := osutil.Exists(NyfikenRoot)
 	if err != nil {
 		return err
