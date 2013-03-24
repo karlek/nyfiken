@@ -8,8 +8,10 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/howeyc/fsnotify"
 	"github.com/karlek/nyfiken/cli"
 	"github.com/karlek/nyfiken/ini"
+	"github.com/karlek/nyfiken/page"
 	"github.com/karlek/nyfiken/settings"
 )
 
@@ -21,20 +23,28 @@ func main() {
 	}
 }
 
+var pages []*page.Page
+
 func nyfikend() (err error) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	var secondsElapsed float64
 
+	// Change settings files only when config files are modified.
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	go watchConfig(watcher)
+	err = watcher.Watch(settings.NyfikenRoot)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	// Listen for nyfikenc queries.
 	go cli.Listen()
-	for ; ; secondsElapsed++ {
-		// Retrieve an array of pages from INI file and read settings.
-		pages, err := ini.ReadIni(settings.ConfigPath, settings.PagesPath)
-		if err != nil {
-			return err
-		}
 
+	for ; ; secondsElapsed++ {
 		// A channel in which errors are sent from p.Check()
 		errChan := make(chan error)
 
@@ -62,6 +72,31 @@ func nyfikend() (err error) {
 
 		time.Sleep(1 * time.Second)
 	}
+	watcher.Close()
 
 	return nil
+}
+
+// Reads config files only when they are modified.
+func watchConfig(watcher *fsnotify.Watcher) {
+	var err error
+	for {
+		select {
+		case ev := <-watcher.Event:
+			if ev != nil {
+				if ev.Name == settings.PagesPath {
+					// Retrieve an array of pages from INI file.
+					pages, err = ini.ReadPages(settings.PagesPath)
+				} else if ev.Name == settings.ConfigPath {
+					// Read settings from config file.
+					err = ini.ReadSettings(settings.ConfigPath)
+				}
+			}
+		case err = <-watcher.Error:
+			// Will fatal after select statement
+		}
+		if err != nil {
+			log.Fatalln("error:", err)
+		}
+	}
 }

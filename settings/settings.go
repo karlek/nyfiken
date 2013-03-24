@@ -98,9 +98,9 @@ func initialize() (err error) {
 
 	// Will set nyfiken root differently depending on operating system.
 	setNyfikenRoot()
-	ConfigPath = NyfikenRoot + "config.ini"
-	PagesPath = NyfikenRoot + "pages.ini"
-	CacheRoot = NyfikenRoot + "cache/"
+	ConfigPath = NyfikenRoot + "/config.ini"
+	PagesPath = NyfikenRoot + "/pages.ini"
+	CacheRoot = NyfikenRoot + "/cache/"
 
 	// Create a nyfiken config folder if it doesn't exist.
 	found, err := osutil.Exists(NyfikenRoot)

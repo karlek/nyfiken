@@ -5,5 +5,5 @@ import (
 )
 
 func setNyfikenRoot() {
-	NyfikenRoot = os.Getenv("APPDATA") + "/nyfiken/"
+	NyfikenRoot = os.Getenv("APPDATA") + "/nyfiken"
 }
