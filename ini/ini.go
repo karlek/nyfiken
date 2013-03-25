@@ -279,5 +279,8 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		pages = append(pages, &p)
 	}
 
+	if pages == nil {
+		return nil, errorsutil.ErrorfColor("no pages in %s", settings.PagesPath)
+	}
 	return pages, nil
 }

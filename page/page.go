@@ -34,6 +34,11 @@ type Page struct {
 // with a previous check to determine if the page has been updated. Check takes
 // an error channel to send errors to be printed.
 func (p *Page) Check(ch chan<- error) {
+	ch <- p.check()
+}
+
+// check is an non-exported function for better error handling.
+func (p *Page) check() (err error) {
 	// Retrieve result from download or return timeout error.
 	var r struct {
 		*html.Node
@@ -42,26 +47,22 @@ func (p *Page) Check(ch chan<- error) {
 	select {
 	case r = <-p.errWrapDownload():
 		if r.error != nil {
-			ch <- r.error
-			return
+			return r.error
 		}
 	case <-time.After(settings.TimeoutDuration):
-		ch <- fmt.Errorf("timeout: %s", p.ReqUrl.String())
-		return
+		return fmt.Errorf("timeout: %s", p.ReqUrl.String())
 	}
 
 	// Extract selection from downloaded source.
 	selection, err := p.makeSelection(r.Node)
 	if err != nil {
-		ch <- err
-		return
+		return err
 	}
 
 	// File name is a escaped URL in a cache folder.
 	linuxPath, err := filename.Encode(p.ReqUrl.String())
 	if err != nil {
-		ch <- err
-		return
+		return err
 	}
 	cachePathName := settings.CacheRoot + linuxPath + ".htm"
 
@@ -76,14 +77,11 @@ func (p *Page) Check(ch chan<- error) {
 				settings.Global.FilePerms,
 			)
 			if err != nil {
-				ch <- errorsutil.ErrorfColor("%s", err)
-				return
+				return errorsutil.ErrorfColor("%s", err)
 			}
-			ch <- nil
-			return
+			return nil
 		} else {
-			ch <- errorsutil.ErrorfColor("%s", err)
-			return
+			return errorsutil.ErrorfColor("%s", err)
 		}
 	}
 
@@ -110,25 +108,22 @@ func (p *Page) Check(ch chan<- error) {
 			mailPage.Settings.Regexp = ""
 			sel, err := mailPage.makeSelection(r.Node)
 			if err != nil {
-				ch <- err
-				return
+				return err
 			}
 
 			err = mail.Send(*p.ReqUrl, p.Settings.RecvMail, sel)
 			if err != nil {
-				ch <- err
-				return
+				return err
 			}
 		}
 
 		// Update the comparison file.
 		err = ioutil.WriteFile(cachePathName, []byte(selection), settings.Global.FilePerms)
 		if err != nil {
-			ch <- errorsutil.ErrorfColor("%s", err)
-			return
+			return errorsutil.ErrorfColor("%s", err)
 		}
 	}
-	ch <- nil
+	return nil
 }
 
 // An error wrapping convenience function for p.download() used because of

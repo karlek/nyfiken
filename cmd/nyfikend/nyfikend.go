@@ -28,7 +28,10 @@ var pages []*page.Page
 func nyfikend() (err error) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	var secondsElapsed float64
+	pages, err = ini.ReadIni(settings.ConfigPath, settings.PagesPath)
+	if err != nil {
+		return err
+	}
 
 	// Change settings files only when config files are modified.
 	watcher, err := fsnotify.NewWatcher()
@@ -44,6 +47,7 @@ func nyfikend() (err error) {
 	// Listen for nyfikenc queries.
 	go cli.Listen()
 
+	var secondsElapsed float64
 	for ; ; secondsElapsed++ {
 		// A channel in which errors are sent from p.Check()
 		errChan := make(chan error)
