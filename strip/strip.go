@@ -36,7 +36,8 @@ func Numbers(doc *html.Node) (newSel string) {
 	}
 	f(doc)
 
-	return htmlutil.RenderToString(doc)
+	newSel, _ = htmlutil.RenderClean(doc)
+	return newSel
 }
 
 // Returns a string with empty HTML attributes.
@@ -53,7 +54,8 @@ func Attrs(doc *html.Node) (newSel string) {
 	}
 	f(doc)
 
-	return htmlutil.RenderToString(doc)
+	newSel, _ = htmlutil.RenderClean(doc)
+	return newSel
 }
 
 // Returns a HTML free string.
