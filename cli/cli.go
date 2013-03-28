@@ -3,6 +3,7 @@ package cli
 
 import (
 	"encoding/gob"
+	// dbg "fmt"
 	"log"
 	"net"
 
@@ -29,11 +30,12 @@ func Listen() {
 		}
 
 		// Listen for errors from connection.
-		errChan := make(chan error)
+		errChan := make(chan error, 1)
 		go errWrapTakeInput(conn, errChan)
-		if err := <-errChan; err != nil {
+		if err = <-errChan; err != nil {
 			log.Fatalln(errorsutil.ErrorfColor("%s", err))
 		}
+		conn.Close()
 	}
 }
 
@@ -43,56 +45,30 @@ func errWrapTakeInput(conn net.Conn, outerErrChan chan error) {
 
 // Wait for input and send output to client.
 func takeInput(conn net.Conn) (err error) {
-
-	ch := make(chan string)
-	innerErrChan := make(chan error)
-
-	// Start a goroutine to read from our net connection
-	go func(ch chan string, innerErrChan chan error) {
-		r := bufioutil.NewReader(conn)
-		for {
-			data, err := r.ReadLine()
-			if err != nil {
-				// send an error if it's encountered
-				innerErrChan <- err
-				return
-			}
-
-			// send data if we read some.
-			ch <- data
+	query, err := bufioutil.NewReader(conn).ReadLine()
+	if err != nil {
+		if err.Error() != "EOF" {
+			return err
 		}
-	}(ch, innerErrChan)
-
-	// continuously read from the connection
-	for {
-		select {
-		// This case means we recieved data on the connection
-		case query := <-ch:
-			// Do something with the data
-			switch query {
-			case settings.QueryUpdates:
-				// Will write to network.
-				enc := gob.NewEncoder(conn)
-
-				// Encode (send) the value.
-				err = enc.Encode(settings.Updates)
-			case settings.QueryClearAll:
-				settings.Updates = make(map[settings.Update]bool)
-			case settings.QueryForceRecheck:
-				err = forceUpdate()
-			}
-			if err != nil {
-				return err
-			}
-
-		// This case means we got an error and the goroutine has finished
-		case err = <-innerErrChan:
-			if err.Error() != "EOF" {
-				return err
-			}
-		}
-		return nil
 	}
+
+	// Do something with the query
+	switch query {
+	case settings.QueryUpdates:
+		// Will write to network.
+		enc := gob.NewEncoder(conn)
+
+		// Encode (send) the value.
+		err = enc.Encode(settings.Updates)
+	case settings.QueryClearAll:
+		settings.Updates = make(map[settings.Update]bool)
+	case settings.QueryForceRecheck:
+		err = forceUpdate()
+	}
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
