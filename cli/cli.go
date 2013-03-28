@@ -30,15 +30,19 @@ func Listen() {
 
 		// Listen for errors from connection.
 		errChan := make(chan error)
-		go takeInput(conn, errChan)
+		go errWrapTakeInput(conn, errChan)
 		if err := <-errChan; err != nil {
 			log.Fatalln(errorsutil.ErrorfColor("%s", err))
 		}
 	}
 }
 
+func errWrapTakeInput(conn net.Conn, outerErrChan chan error) {
+	outerErrChan <- takeInput(conn)
+}
+
 // Wait for input and send output to client.
-func takeInput(conn net.Conn, outerErrChan chan error) {
+func takeInput(conn net.Conn) (err error) {
 
 	ch := make(chan string)
 	innerErrChan := make(chan error)
@@ -71,28 +75,25 @@ func takeInput(conn net.Conn, outerErrChan chan error) {
 				enc := gob.NewEncoder(conn)
 
 				// Encode (send) the value.
-				err := enc.Encode(settings.Updates)
-				if err != nil {
-					outerErrChan <- err
-				}
+				err = enc.Encode(settings.Updates)
 			case settings.QueryClearAll:
 				settings.Updates = make(map[settings.Update]bool)
 			case settings.QueryForceRecheck:
-				err := forceUpdate()
-				if err != nil {
-					outerErrChan <- err
-				}
+				err = forceUpdate()
+			}
+			if err != nil {
+				return err
 			}
 
 		// This case means we got an error and the goroutine has finished
-		case err := <-innerErrChan:
+		case err = <-innerErrChan:
 			if err.Error() != "EOF" {
-				outerErrChan <- err
+				return err
 			}
 		}
-		outerErrChan <- nil
+		return nil
 	}
-	outerErrChan <- nil
+	return nil
 }
 
 // Check all pages immediately

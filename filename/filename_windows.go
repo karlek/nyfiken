@@ -13,6 +13,35 @@ const (
 	NTFSMaxLength = 255
 )
 
+// Characters whose integer representations are in the range from 1 through 31.
+
+// Do not use the following reserved names for the name of a file:
+// Also avoid these names followed immediately by an extension; for example, NUL.txt is not recommended.
+var reservedNames = map[string]bool{
+	"CON":  true,
+	"PRN":  true,
+	"AUX":  true,
+	"NUL":  true,
+	"COM1": true,
+	"COM2": true,
+	"COM3": true,
+	"COM4": true,
+	"COM5": true,
+	"COM6": true,
+	"COM7": true,
+	"COM8": true,
+	"COM9": true,
+	"LPT1": true,
+	"LPT2": true,
+	"LPT3": true,
+	"LPT4": true,
+	"LPT5": true,
+	"LPT6": true,
+	"LPT7": true,
+	"LPT8": true,
+	"LPT9": true,
+}
+
 // Encodes windows filename hostile characters.
 // Blacklisted:
 //  `\\`
@@ -24,6 +53,7 @@ const (
 //  `<`
 //  `>`
 //  `|`
+//  `\0`
 func Encode(unencoded string) (clean string, err error) {
 	for _, chr := range unencoded {
 		switch chr {
@@ -45,6 +75,8 @@ func Encode(unencoded string) (clean string, err error) {
 			clean += `%3e`
 		case '|':
 			clean += `%7c`
+		case 0x00:
+			clean += `%00`
 		default:
 			clean += string(chr)
 		}
@@ -71,7 +103,7 @@ func Encode(unencoded string) (clean string, err error) {
 func Strip(unencoded string) (clean string, err error) {
 	for _, chr := range unencoded {
 		switch chr {
-		case '\\', '/', ':', '*', '?', '"', '<', '>', '|':
+		case IsRestricted(r):
 			continue
 		default:
 			clean += string(chr)
@@ -97,12 +129,12 @@ func Strip(unencoded string) (clean string, err error) {
 //  `>`
 //  `|`
 func Replace(unencoded, replace string) (clean string, err error) {
-	for _, chr := range unencoded {
-		switch chr {
-		case '\\', '/', ':', '*', '?', '"', '<', '>', '|':
+	for _, r := range unencoded {
+		switch r {
+		case IsRestricted(r):
 			clean += replace
 		default:
-			clean += string(chr)
+			clean += string(r)
 		}
 	}
 
@@ -111,4 +143,25 @@ func Replace(unencoded, replace string) (clean string, err error) {
 		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
 	}
 	return clean, nil
+}
+
+func IsRestricted(r rune) bool {
+	switch r {
+	case '\\', '/', ':', '*', '?', '"', '<', '>', '|', string(0x00):
+		return true
+	default:
+		return false
+	}
+}
+
+func IsLastSpaceOrPeriod(filename string) bool {
+	if r := filename[:len(filename)-1]; r == ' ' || r == '.' {
+		return true
+	}
+	return false
+}
+
+func IsRestrictedFilename(filename string) bool {
+	found, ok := reservedNames[filename]
+	return ok
 }

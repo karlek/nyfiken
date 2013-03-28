@@ -50,23 +50,7 @@ func nyfikenc() (err error) {
 	if err != nil {
 		return err
 	}
-
-	// Ask for updates.
 	bw := bufioutil.NewWriter(conn)
-	_, err = bw.WriteLine(settings.QueryUpdates)
-	if err != nil {
-		return err
-	}
-
-	// Will read from network.
-	dec := gob.NewDecoder(conn)
-
-	// Decode (receive) the value.
-	var ups map[settings.Update]bool
-	err = dec.Decode(&ups)
-	if err != nil {
-		return err
-	}
 
 	// Command-line flag check
 	if flagRecheck ||
@@ -79,19 +63,20 @@ func nyfikenc() (err error) {
 			return clearAll(&bw)
 		}
 		if flagReadAll {
-			br := bufioutil.NewReader(conn)
-			return readAll(&bw, &br, ups)
-		}
-	} else {
-		// If no updates where found -> apologize.
-		lenUps := len(ups)
-		if lenUps == 0 {
-			fmt.Println("Sorry, no updates :(")
-			return err
+			return readAll(&bw, conn)
 		}
 	}
+
+	// If no updates where found -> apologize.
+	ups, err := getUpdates(&bw, conn)
 	if err != nil {
 		return err
+	}
+
+	lenUps := len(ups)
+	if lenUps == 0 {
+		fmt.Println("Sorry, no updates :(")
+		return nil
 	}
 
 	for up, _ := range ups {
@@ -102,7 +87,7 @@ func nyfikenc() (err error) {
 }
 
 // Opens all links with browser.
-func readAll(bw *bufioutil.Writer, br *bufioutil.Reader, ups map[settings.Update]bool) (err error) {
+func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	// Read in config file to settings.Global
 	err = ini.ReadSettings(settings.ConfigPath)
 	if err != nil {
@@ -112,6 +97,11 @@ func readAll(bw *bufioutil.Writer, br *bufioutil.Reader, ups map[settings.Update
 	if settings.Global.Browser == "" {
 		fmt.Println("No browser path set in:", settings.ConfigPath)
 		return nil
+	}
+
+	ups, err := getUpdates(bw, conn)
+	if err != nil {
+		return err
 	}
 
 	// If no updates was found, ask for forgiveness.
@@ -159,4 +149,23 @@ func force(bw *bufioutil.Writer) (err error) {
 
 	fmt.Println("Pages will be checked immediately by your demand.")
 	return nil
+}
+
+// Receive updates from nyfikend.
+func getUpdates(bw *bufioutil.Writer, conn net.Conn) (ups map[settings.Update]bool, err error) {
+	// Ask for updates.
+	_, err = bw.WriteLine(settings.QueryUpdates)
+	if err != nil {
+		return nil, err
+	}
+
+	// Will read from network.
+	dec := gob.NewDecoder(conn)
+
+	// Decode (receive) the value.
+	err = dec.Decode(&ups)
+	if err != nil {
+		return nil, err
+	}
+	return ups, nil
 }
