@@ -3,7 +3,6 @@ package cli
 
 import (
 	"encoding/gob"
-	// dbg "fmt"
 	"log"
 	"net"
 
