@@ -3,8 +3,11 @@
 package main
 
 import (
+	"encoding/gob"
 	"log"
 	"math"
+	"os"
+	"os/signal"
 	"runtime"
 	"time"
 
@@ -28,6 +31,12 @@ var pages []*page.Page
 func nyfikend() (err error) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	// Load uncleared updates from last execution.
+	err = loadUpdates()
+	if err != nil {
+		return err
+	}
+
 	pages, err = ini.ReadIni(settings.ConfigPath, settings.PagesPath)
 	if err != nil {
 		return err
@@ -46,6 +55,20 @@ func nyfikend() (err error) {
 
 	// Listen for nyfikenc queries.
 	go cli.Listen()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for _ = range c {
+			watcher.Close()
+
+			err = saveUpdates()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			os.Exit(1)
+		}
+	}()
 
 	var secondsElapsed float64
 	for ; ; secondsElapsed++ {
@@ -76,7 +99,6 @@ func nyfikend() (err error) {
 
 		time.Sleep(1 * time.Second)
 	}
-	watcher.Close()
 
 	return nil
 }
@@ -103,4 +125,36 @@ func watchConfig(watcher *fsnotify.Watcher) {
 			log.Fatalln("error:", err)
 		}
 	}
+}
+
+// Saves uncleared updates for next execution.
+func saveUpdates() (err error) {
+	f, err := os.Create(settings.UpdatesPath)
+	if err != nil {
+		return err
+	}
+
+	enc := gob.NewEncoder(f)
+
+	err = enc.Encode(&settings.Updates)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Retrieves uncleared updates from last execution.
+func loadUpdates() (err error) {
+	f, err := os.Open(settings.UpdatesPath)
+	if err != nil {
+		return err
+	}
+
+	dec := gob.NewDecoder(f)
+
+	err = dec.Decode(&settings.Updates)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -70,6 +70,7 @@ var (
 	ConfigPath  string
 	PagesPath   string
 	CacheRoot   string
+	UpdatesPath string
 
 	// A map of updates that have been logged.
 	Updates map[Update]bool
@@ -101,6 +102,7 @@ func initialize() (err error) {
 	ConfigPath = NyfikenRoot + "/config.ini"
 	PagesPath = NyfikenRoot + "/pages.ini"
 	CacheRoot = NyfikenRoot + "/cache/"
+	UpdatesPath = NyfikenRoot + "/updates.gob"
 
 	// Create a nyfiken config folder if it doesn't exist.
 	found, err := osutil.Exists(NyfikenRoot)
