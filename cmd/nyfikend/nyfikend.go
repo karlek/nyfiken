@@ -133,6 +133,7 @@ func saveUpdates() (err error) {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	enc := gob.NewEncoder(f)
 
@@ -149,6 +150,7 @@ func loadUpdates() (err error) {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	dec := gob.NewDecoder(f)
 
