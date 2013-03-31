@@ -93,6 +93,12 @@ func (p *Page) check() (err error) {
 		u := settings.Update{p.ReqUrl.String()}
 		settings.Updates[u] = true
 
+		// Save updates to file.
+		err = settings.SaveUpdates()
+		if err != nil {
+			return err
+		}
+
 		// If the page has a mail and all compulsory global mail settings are
 		// set, send a mail to notify the user about an update.
 		if p.Settings.RecvMail != "" &&

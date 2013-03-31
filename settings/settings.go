@@ -2,6 +2,7 @@
 package settings
 
 import (
+	"encoding/gob"
 	"log"
 	"os"
 	"time"
@@ -104,6 +105,12 @@ func initialize() (err error) {
 	CacheRoot = NyfikenRoot + "/cache/"
 	UpdatesPath = NyfikenRoot + "/updates.gob"
 
+	// Load uncleared updates from last execution.
+	err = LoadUpdates()
+	if err != nil {
+		return err
+	}
+
 	// Create a nyfiken config folder if it doesn't exist.
 	found, err := osutil.Exists(NyfikenRoot)
 	if err != nil {
@@ -127,5 +134,39 @@ func initialize() (err error) {
 		}
 	}
 
+	return nil
+}
+
+// Saves uncleared updates for next execution.
+func SaveUpdates() (err error) {
+	f, err := os.Create(UpdatesPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	enc := gob.NewEncoder(f)
+
+	err = enc.Encode(&Updates)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Retrieves uncleared updates from last execution.
+func LoadUpdates() (err error) {
+	f, err := os.Open(UpdatesPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	dec := gob.NewDecoder(f)
+
+	err = dec.Decode(&Updates)
+	if err != nil {
+		return err
+	}
 	return nil
 }
