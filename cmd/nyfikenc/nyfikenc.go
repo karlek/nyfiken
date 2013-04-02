@@ -135,12 +135,6 @@ func clearAll(bw *bufioutil.Writer) (err error) {
 		return err
 	}
 
-	// Remove saved updates.
-	err = os.Remove(settings.UpdatesPath)
-	if err != nil {
-		return err
-	}
-
 	fmt.Println("Updates list has been cleared!")
 	return nil
 }
