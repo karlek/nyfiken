@@ -31,7 +31,8 @@ func errWrapListen() (err error) {
 		conn, err := ln.Accept()
 		if err != nil {
 			if err != nil {
-				return err
+				log.Println(err)
+				continue
 			}
 		}
 
@@ -39,7 +40,7 @@ func errWrapListen() (err error) {
 		errChan := make(chan error, 1)
 		go errWrapTakeInput(conn, errChan)
 		if err = <-errChan; err != nil {
-			return err
+			log.Println(err)
 		}
 		conn.Close()
 	}
