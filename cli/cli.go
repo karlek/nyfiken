@@ -14,9 +14,16 @@ import (
 
 // Listen makes the server wait for a connection from a client.
 func Listen() {
-	ln, err := net.Listen("tcp", settings.Global.PortNum)
+	err := errWrapListen()
 	if err != nil {
 		log.Fatalln(errorsutil.ErrorfColor("%s", err))
+	}
+}
+
+func errWrapListen() {
+	ln, err := net.Listen("tcp", settings.Global.PortNum)
+	if err != nil {
+		return err
 	}
 
 	// Wait for request.
@@ -24,7 +31,7 @@ func Listen() {
 		conn, err := ln.Accept()
 		if err != nil {
 			if err != nil {
-				log.Fatalln(errorsutil.ErrorfColor("%s", err))
+				return err
 			}
 		}
 
@@ -32,7 +39,7 @@ func Listen() {
 		errChan := make(chan error, 1)
 		go errWrapTakeInput(conn, errChan)
 		if err = <-errChan; err != nil {
-			log.Fatalln(errorsutil.ErrorfColor("%s", err))
+			return err
 		}
 		conn.Close()
 	}
