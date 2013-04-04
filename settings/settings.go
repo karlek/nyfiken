@@ -56,7 +56,7 @@ const (
 	DefaultInterval = 1 * time.Minute
 
 	// Default permissions to create files: user read and write permissions.
-	DefaultFilePerms = os.FileMode(0600)
+	DefaultFilePerms = os.FileMode(0700)
 
 	// Default newline character
 	Newline = "\n"
