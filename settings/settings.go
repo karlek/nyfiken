@@ -56,7 +56,8 @@ const (
 	DefaultInterval = 1 * time.Minute
 
 	// Default permissions to create files: user read and write permissions.
-	DefaultFilePerms = os.FileMode(0700)
+	DefaultFilePerms   = os.FileMode(0600)
+	DefaultFolderPerms = os.FileMode(0700)
 
 	// Default newline character
 	Newline = "\n"
@@ -117,7 +118,7 @@ func initialize() (err error) {
 		return err
 	}
 	if !found {
-		err := os.Mkdir(NyfikenRoot, DefaultFilePerms)
+		err := os.Mkdir(NyfikenRoot, DefaultFolderPerms)
 		if err != nil {
 			return err
 		}
@@ -128,7 +129,7 @@ func initialize() (err error) {
 		return err
 	}
 	if !found {
-		err := os.Mkdir(CacheRoot, DefaultFilePerms)
+		err := os.Mkdir(CacheRoot, DefaultFolderPerms)
 		if err != nil {
 			return err
 		}
