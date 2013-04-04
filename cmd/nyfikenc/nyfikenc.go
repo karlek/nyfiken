@@ -94,14 +94,14 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		return err
 	}
 
-	if settings.Global.Browser == "" {
-		fmt.Println("No browser path set in:", settings.ConfigPath)
-		return nil
-	}
-
 	ups, err := getUpdates(bw, conn)
 	if err != nil {
 		return err
+	}
+
+	if settings.Global.Browser == "" {
+		fmt.Println("No browser path set in:", settings.ConfigPath)
+		return nil
 	}
 
 	// If no updates was found, ask for forgiveness.

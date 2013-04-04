@@ -36,12 +36,12 @@ func nyfikend() (err error) {
 	// Change settings files only when config files are modified.
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	go watchConfig(watcher)
 	err = watcher.Watch(settings.NyfikenRoot)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	// Listen for nyfikenc queries.
