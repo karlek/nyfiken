@@ -57,7 +57,7 @@ const (
 
 	// Default permissions to create files: user read and write permissions.
 	DefaultFilePerms   = os.FileMode(0600)
-	DefaultFolderPerms = os.FileMode(0700)
+	DefaultFolderPerms = os.FileMode(0755)
 
 	// Default newline character
 	Newline = "\n"
