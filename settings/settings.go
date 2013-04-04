@@ -107,7 +107,7 @@ func initialize() (err error) {
 
 	// Load uncleared updates from last execution.
 	err = LoadUpdates()
-	if err != nil {
+	if !os.IsNotExist(err) && err != nil {
 		return err
 	}
 
