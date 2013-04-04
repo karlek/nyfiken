@@ -20,7 +20,7 @@ func Listen() {
 	}
 }
 
-func errWrapListen() {
+func errWrapListen() (err error) {
 	ln, err := net.Listen("tcp", settings.Global.PortNum)
 	if err != nil {
 		return err
