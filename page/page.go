@@ -2,7 +2,6 @@
 package page
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -50,7 +49,7 @@ func (p *Page) check() (err error) {
 			return errutil.Err(r.error)
 		}
 	case <-time.After(settings.TimeoutDuration):
-		return errutil.NewNoPos(fmt.Sprintf("timeout: %s", p.ReqUrl.String()))
+		return errutil.NewNoPosf("timeout: %s", p.ReqUrl.String())
 	}
 
 	// Extract selection from downloaded source.

@@ -125,7 +125,7 @@ func ReadSettings(configPath string) (err error) {
 func parseSettings(config ini.Section) (err error) {
 	for fieldName, _ := range config {
 		if _, found := settingsFields[fieldName]; !found {
-			return errutil.Newf(ErrFieldNotExist, fieldName)
+			return errutil.NewNoPosf(ErrFieldNotExist, fieldName)
 		}
 	}
 
@@ -154,16 +154,16 @@ func parseSettings(config ini.Section) (err error) {
 func parseMail(mail ini.Section) (err error) {
 	for fieldName, _ := range mail {
 		if _, found := mailFields[fieldName]; !found {
-			return errutil.Newf(ErrFieldNotExist, fieldName)
+			return errutil.NewNoPosf(ErrFieldNotExist, fieldName)
 		}
 	}
 
 	// Set global sender mail.
 	settings.Global.SenderMail.Address = mail.S(fieldSendMail, "")
 	if settings.Global.SenderMail.Address == "" {
-		return errutil.Newf(ErrMailAddressNotFound)
+		return errutil.NewNoPosf(ErrMailAddressNotFound)
 	} else if !strings.Contains(settings.Global.SenderMail.Address, "@") {
-		return errutil.Newf(ErrInvalidMailAddress, settings.Global.SenderMail.Address)
+		return errutil.NewNoPosf(ErrInvalidMailAddress, settings.Global.SenderMail.Address)
 	}
 
 	// Set global sender mail password.
@@ -172,21 +172,21 @@ func parseMail(mail ini.Section) (err error) {
 	// Set global sender authorization server.
 	settings.Global.SenderMail.AuthServer = mail.S(fieldSendAuthServer, "")
 	if settings.Global.SenderMail.AuthServer == "" {
-		return errutil.Newf(ErrMailAuthServerNotFound)
+		return errutil.NewNoPosf(ErrMailAuthServerNotFound)
 	}
 
 	// Set global sender mail outgoing server.
 	settings.Global.SenderMail.OutServer = mail.S(fieldSendOutServer, "")
 	if settings.Global.SenderMail.OutServer == "" {
-		return errutil.Newf(ErrMailOutServerNotFound)
+		return errutil.NewNoPosf(ErrMailOutServerNotFound)
 	}
 
 	// Set global receive mail.
 	settings.Global.RecvMail = mail.S(fieldRecvMail, "")
 	if settings.Global.RecvMail == "" {
-		return errutil.Newf(ErrMailAddressNotFound)
+		return errutil.NewNoPosf(ErrMailAddressNotFound)
 	} else if !strings.Contains(settings.Global.RecvMail, "@") {
-		return errutil.Newf(ErrInvalidMailAddress, settings.Global.RecvMail)
+		return errutil.NewNoPosf(ErrInvalidMailAddress, settings.Global.RecvMail)
 	}
 
 	return nil
@@ -211,7 +211,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 
 		for fieldName, _ := range section {
 			if _, found := siteFields[fieldName]; !found {
-				return nil, errutil.Newf(ErrFieldNotExist, fieldName)
+				return nil, errutil.NewNoPosf(ErrFieldNotExist, fieldName)
 			}
 		}
 
@@ -248,7 +248,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		// Set individual mail address.
 		pageSettings.RecvMail = section.S(fieldRecvMail, settings.Global.RecvMail)
 		if pageSettings.RecvMail != "" && !strings.Contains(pageSettings.RecvMail, "@") {
-			return nil, errutil.Newf(ErrInvalidMailAddress, pageSettings.RecvMail)
+			return nil, errutil.NewNoPosf(ErrInvalidMailAddress, pageSettings.RecvMail)
 		}
 
 		// Set individual header.
@@ -259,7 +259,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 				keyVal := strings.SplitN(header, ":", 2)
 				m[strings.TrimSpace(keyVal[0])] = strings.TrimSpace(keyVal[1])
 			} else {
-				return nil, errutil.Newf(ErrInvalidHeader, header)
+				return nil, errutil.NewNoPosf(ErrInvalidHeader, header)
 			}
 		}
 		pageSettings.Header = m
@@ -268,7 +268,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		pageSettings.StripFuncs = section.List(fieldStrip)
 		if pageSettings.StripFuncs == nil {
 			if _, found := section[fieldStrip]; found {
-				return nil, errutil.Newf(ErrInvalidListDeclaration)
+				return nil, errutil.NewNoPosf(ErrInvalidListDeclaration)
 			}
 		}
 
@@ -278,7 +278,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 	}
 
 	if pages == nil {
-		return nil, errutil.Newf("no pages in %s", settings.PagesPath)
+		return nil, errutil.NewNoPosf("no pages in %s", settings.PagesPath)
 	}
 	return pages, nil
 }

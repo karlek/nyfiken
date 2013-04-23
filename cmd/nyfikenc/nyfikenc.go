@@ -16,6 +16,10 @@ import (
 	"github.com/mewkiz/pkg/errutil"
 )
 
+const (
+	ErrNodata = 61 // No data available
+)
+
 // command-line flags
 var flagRecheck bool
 var flagClearAll bool
@@ -49,12 +53,11 @@ func nyfikenc() (err error) {
 	// Connect to nyfikend.
 	conn, err := net.Dial("tcp", "localhost"+settings.Global.PortNum)
 	if err != nil {
-		switch e := err.(type) {
-		case (*net.OpError):
+		if e, ok := err.(*net.OpError); ok {
 			if e.Err.Error() == "connection refused" {
 				return errutil.NewNoPos("nyfikenc: unable to connect to nyfikend. Please make sure that the daemon is running.")
 			}
-		default:
+		} else {
 			return err
 		}
 	}
@@ -84,6 +87,7 @@ func nyfikenc() (err error) {
 	lenUps := len(ups)
 	if lenUps == 0 {
 		fmt.Println("Sorry, no updates :(")
+		os.Exit(ErrNodata)
 		return nil
 	}
 
