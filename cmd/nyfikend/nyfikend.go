@@ -13,13 +13,14 @@ import (
 	"github.com/karlek/nyfiken/ini"
 	"github.com/karlek/nyfiken/page"
 	"github.com/karlek/nyfiken/settings"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 // Error wrapper.
 func main() {
 	err := nyfikend()
 	if err != nil {
-		log.Fatalln("nyfikend:", err)
+		log.Fatalln(errutil.Err(err))
 	}
 }
 
@@ -30,18 +31,18 @@ func nyfikend() (err error) {
 
 	pages, err = ini.ReadIni(settings.ConfigPath, settings.PagesPath)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	// Change settings files only when config files are modified.
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	go watchConfig(watcher)
 	err = watcher.Watch(settings.NyfikenRoot)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	// Listen for nyfikenc queries.
@@ -69,7 +70,7 @@ func nyfikend() (err error) {
 		go func(ch chan error, nChecks int) {
 			for i := 0; i < nChecks; i++ {
 				if err := <-ch; err != nil {
-					log.Println(err)
+					log.Println(errutil.Err(err))
 				}
 			}
 		}(errChan, numChecks)
@@ -99,7 +100,7 @@ func watchConfig(watcher *fsnotify.Watcher) {
 			// Will fatal after select statement
 		}
 		if err != nil {
-			log.Fatalln("error:", err)
+			log.Fatalln(errutil.Err(err))
 		}
 	}
 }

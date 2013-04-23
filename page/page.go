@@ -19,7 +19,7 @@ import (
 	"github.com/karlek/nyfiken/settings"
 	"github.com/karlek/nyfiken/strip"
 	"github.com/karlek/nyfiken/strmetr"
-	"github.com/mewkiz/pkg/errorsutil"
+	"github.com/mewkiz/pkg/errutil"
 	"github.com/mewkiz/pkg/htmlutil"
 )
 
@@ -47,22 +47,22 @@ func (p *Page) check() (err error) {
 	select {
 	case r = <-p.errWrapDownload():
 		if r.error != nil {
-			return r.error
+			return errutil.Err(r.error)
 		}
 	case <-time.After(settings.TimeoutDuration):
-		return fmt.Errorf("timeout: %s", p.ReqUrl.String())
+		return errutil.NewNoPos(fmt.Sprintf("timeout: %s", p.ReqUrl.String()))
 	}
 
 	// Extract selection from downloaded source.
 	selection, err := p.makeSelection(r.Node)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	// File name is a escaped URL in a cache folder.
 	linuxPath, err := filename.Encode(p.ReqUrl.String())
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	cachePathName := settings.CacheRoot + linuxPath + ".htm"
 
@@ -77,11 +77,11 @@ func (p *Page) check() (err error) {
 				settings.Global.FilePerms,
 			)
 			if err != nil {
-				return errorsutil.ErrorfColor("%s", err)
+				return errutil.Err(err)
 			}
 			return nil
 		} else {
-			return errorsutil.ErrorfColor("%s", err)
+			return errutil.Err(err)
 		}
 	}
 
@@ -96,7 +96,7 @@ func (p *Page) check() (err error) {
 		// Save updates to file.
 		err = settings.SaveUpdates()
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 
 		// If the page has a mail and all compulsory global mail settings are
@@ -114,19 +114,19 @@ func (p *Page) check() (err error) {
 			mailPage.Settings.Regexp = ""
 			sel, err := mailPage.makeSelection(r.Node)
 			if err != nil {
-				return err
+				return errutil.Err(err)
 			}
 
 			err = mail.Send(*p.ReqUrl, p.Settings.RecvMail, sel)
 			if err != nil {
-				return err
+				return errutil.Err(err)
 			}
 		}
 
 		// Update the comparison file.
 		err = ioutil.WriteFile(cachePathName, []byte(selection), settings.Global.FilePerms)
 		if err != nil {
-			return errorsutil.ErrorfColor("%s", err)
+			return errutil.Err(err)
 		}
 	}
 	return nil
@@ -159,7 +159,7 @@ func (p *Page) download() (doc *html.Node, err error) {
 	// Construct the request.
 	req, err := http.NewRequest("GET", p.ReqUrl.String(), nil)
 	if err != nil {
-		return nil, errorsutil.ErrorfColor("%s", err)
+		return nil, errutil.Err(err)
 	}
 
 	// If special headers were specified, add them to the request.
@@ -172,19 +172,19 @@ func (p *Page) download() (doc *html.Node, err error) {
 	// Do request and read response.
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, errorsutil.ErrorfColor("%s", err)
+		return nil, errutil.Err(err)
 	}
 	defer resp.Body.Close()
 
 	// If response contained a client or server error, fail with that error.
 	if resp.StatusCode >= 400 {
-		return nil, errorsutil.ErrorfColor("%s: (%d) - %s", p.ReqUrl.String(), resp.StatusCode, resp.Status)
+		return nil, errutil.Newf("%s: (%d) - %s", p.ReqUrl.String(), resp.StatusCode, resp.Status)
 	}
 
 	// Read the response body to []byte.
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errorsutil.ErrorfColor("%s", err)
+		return nil, errutil.Err(err)
 	}
 
 	// Fix charset problems with servers that doesn't use utf-8
@@ -223,7 +223,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 		// Make a selector from the user specified string.
 		s, err := cascadia.Compile(p.Settings.Selection)
 		if err != nil {
-			return "", errorsutil.ErrorfColor("%s", err)
+			return "", errutil.Err(err)
 		}
 
 		// Find all nodes that matches selection s.
@@ -236,7 +236,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 	}
 	doc, err := html.Parse(strings.NewReader(selection))
 	if err != nil {
-		return "", errorsutil.ErrorfColor("%s", err)
+		return "", errutil.Err(err)
 	}
 
 	// --- [ /CSS selection ] -------------------------------------------------/
@@ -255,7 +255,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 		}
 		doc, err = html.Parse(strings.NewReader(selection))
 		if err != nil {
-			return "", errorsutil.ErrorfColor("%s", err)
+			return "", errutil.Err(err)
 		}
 	}
 
@@ -266,7 +266,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 	if p.Settings.Regexp != "" {
 		re, err := regexp.Compile(p.Settings.Regexp)
 		if err != nil {
-			return "", errorsutil.ErrorfColor("%s", err)
+			return "", errutil.Err(err)
 		}
 
 		// -1 means to find all.
@@ -285,7 +285,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 	if p.Settings.Negexp != "" {
 		ne, err := regexp.Compile(p.Settings.Negexp)
 		if err != nil {
-			return "", errorsutil.ErrorfColor("%s", err)
+			return "", errutil.Err(err)
 		}
 
 		// Remove all that matches the regular expression ne

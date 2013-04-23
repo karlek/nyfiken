@@ -9,38 +9,36 @@ import (
 	"github.com/karlek/nyfiken/ini"
 	"github.com/karlek/nyfiken/settings"
 	"github.com/mewkiz/pkg/bufioutil"
-	"github.com/mewkiz/pkg/errorsutil"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 // Listen makes the server wait for a connection from a client.
 func Listen() {
 	err := errWrapListen()
 	if err != nil {
-		log.Fatalln(errorsutil.ErrorfColor("%s", err))
+		log.Fatalln(errutil.Err(err))
 	}
 }
 
 func errWrapListen() (err error) {
 	ln, err := net.Listen("tcp", settings.Global.PortNum)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	// Wait for request.
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			if err != nil {
-				log.Println(err)
-				continue
-			}
+			log.Println(errutil.Err(err))
+			continue
 		}
 
 		// Listen for errors from connection.
 		errChan := make(chan error, 1)
 		go errWrapTakeInput(conn, errChan)
 		if err = <-errChan; err != nil {
-			log.Println(err)
+			log.Println(errutil.Err(err))
 		}
 		conn.Close()
 	}
@@ -55,7 +53,7 @@ func takeInput(conn net.Conn) (err error) {
 	query, err := bufioutil.NewReader(conn).ReadLine()
 	if err != nil {
 		if err.Error() != "EOF" {
-			return err
+			return errutil.Err(err)
 		}
 	}
 
@@ -74,7 +72,7 @@ func takeInput(conn net.Conn) (err error) {
 		err = forceUpdate()
 	}
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	return nil
@@ -84,7 +82,7 @@ func takeInput(conn net.Conn) (err error) {
 func forceUpdate() (err error) {
 	pages, err := ini.ReadPages(settings.PagesPath)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	// A channel in which errors are sent from p.Check()
@@ -102,7 +100,7 @@ func forceUpdate() (err error) {
 	go func(ch chan error, nChecks int) {
 		for i := 0; i < nChecks; i++ {
 			if err := <-ch; err != nil {
-				log.Println(err)
+				log.Println(errutil.Err(err))
 			}
 		}
 	}(errChan, numChecks)

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/mewkiz/pkg/errutil"
 	"github.com/mewkiz/pkg/osutil"
 )
 
@@ -92,7 +93,7 @@ var (
 func init() {
 	err := initialize()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(errutil.Err(err))
 	}
 }
 
@@ -109,29 +110,29 @@ func initialize() (err error) {
 	// Load uncleared updates from last execution.
 	err = LoadUpdates()
 	if !os.IsNotExist(err) && err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	// Create a nyfiken config folder if it doesn't exist.
 	found, err := osutil.Exists(NyfikenRoot)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	if !found {
 		err := os.Mkdir(NyfikenRoot, DefaultFolderPerms)
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 	}
 
 	found, err = osutil.Exists(CacheRoot)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	if !found {
 		err := os.Mkdir(CacheRoot, DefaultFolderPerms)
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 	}
 
@@ -142,7 +143,7 @@ func initialize() (err error) {
 func SaveUpdates() (err error) {
 	f, err := os.Create(UpdatesPath)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	defer f.Close()
 
@@ -150,7 +151,7 @@ func SaveUpdates() (err error) {
 
 	err = enc.Encode(&Updates)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	return nil
 }
@@ -159,7 +160,7 @@ func SaveUpdates() (err error) {
 func LoadUpdates() (err error) {
 	f, err := os.Open(UpdatesPath)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	defer f.Close()
 
@@ -167,7 +168,7 @@ func LoadUpdates() (err error) {
 
 	err = dec.Decode(&Updates)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	return nil
 }

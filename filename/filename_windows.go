@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+
+	"github.com/mewkiz/pkg/errutil"
 )
 
 const (
@@ -61,7 +63,7 @@ func Encode(unencoded string) (clean string, err error) {
 
 	err = IsAllowed(clean)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	return clean, nil
@@ -80,7 +82,7 @@ func Strip(unencoded string) (clean string, err error) {
 
 	lenClean := len(clean)
 	if lenClean > 255 {
-		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
+		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
 	}
 	return clean, nil
 }
@@ -98,7 +100,7 @@ func Replace(unencoded, replace string) (clean string, err error) {
 
 	lenClean := len(clean)
 	if lenClean > 255 {
-		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
+		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
 	}
 	return clean, nil
 }
@@ -147,11 +149,11 @@ func IsAllowed(filename string) (err error) {
 	lenClean := len(filename)
 	switch {
 	case lenClean > 255:
-		return fmt.Errorf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
+		return errutil.Newf(ErrInvalidFileNameLength, lenClean, NTFSMaxLength)
 	case IsLastSpaceOrPeriod(filename):
-		return ErrLastCharIsSpaceOrPeriod
+		return errutil.Err(ErrLastCharIsSpaceOrPeriod)
 	case IsRestrictedFilename(filename):
-		return ErrNTFSRestrictedFilename
+		return errutil.Err(ErrNTFSRestrictedFilename)
 	}
 	return nil
 }

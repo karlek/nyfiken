@@ -13,6 +13,7 @@ import (
 	"github.com/karlek/nyfiken/ini"
 	"github.com/karlek/nyfiken/settings"
 	"github.com/mewkiz/pkg/bufioutil"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 // command-line flags
@@ -39,7 +40,7 @@ func main() {
 	flag.Parse()
 	err := nyfikenc()
 	if err != nil {
-		log.Fatalln("Nyfikenc:", err)
+		log.Fatalln(errutil.Err(err))
 	}
 }
 
@@ -48,7 +49,7 @@ func nyfikenc() (err error) {
 	// Connect to nyfikend.
 	conn, err := net.Dial("tcp", "localhost"+settings.Global.PortNum)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 	bw := bufioutil.NewWriter(conn)
 
@@ -70,7 +71,7 @@ func nyfikenc() (err error) {
 	// If no updates where found -> apologize.
 	ups, err := getUpdates(&bw, conn)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	lenUps := len(ups)
@@ -91,12 +92,12 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	// Read in config file to settings.Global
 	err = ini.ReadSettings(settings.ConfigPath)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	ups, err := getUpdates(bw, conn)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	if settings.Global.Browser == "" {
@@ -115,11 +116,11 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		cmd := exec.Command(settings.Global.Browser, up.ReqUrl)
 		err := cmd.Start()
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 		err = cmd.Wait()
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 	}
 
@@ -132,7 +133,7 @@ func clearAll(bw *bufioutil.Writer) (err error) {
 	// Send nyfikend a query to clear updates.
 	_, err = bw.WriteLine(settings.QueryClearAll)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	fmt.Println("Updates list has been cleared!")
@@ -144,7 +145,7 @@ func force(bw *bufioutil.Writer) (err error) {
 	// Send nyfikend a query to force a recheck.
 	_, err = bw.WriteLine(settings.QueryForceRecheck)
 	if err != nil {
-		return err
+		return errutil.Err(err)
 	}
 
 	fmt.Println("Pages will be checked immediately by your demand.")
@@ -156,7 +157,7 @@ func getUpdates(bw *bufioutil.Writer, conn net.Conn) (ups map[settings.Update]bo
 	// Ask for updates.
 	_, err = bw.WriteLine(settings.QueryUpdates)
 	if err != nil {
-		return nil, err
+		return nil, errutil.Err(err)
 	}
 
 	// Will read from network.
@@ -165,7 +166,7 @@ func getUpdates(bw *bufioutil.Writer, conn net.Conn) (ups map[settings.Update]bo
 	// Decode (receive) the value.
 	err = dec.Decode(&ups)
 	if err != nil {
-		return nil, err
+		return nil, errutil.Err(err)
 	}
 	return ups, nil
 }

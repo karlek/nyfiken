@@ -3,7 +3,7 @@
 package filename
 
 import (
-	"fmt"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 const (
@@ -28,7 +28,7 @@ func Encode(unencoded string) (clean string, err error) {
 
 	lenClean := len(clean)
 	if lenClean > 255 {
-		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
 	}
 	return clean, nil
 }
@@ -49,7 +49,7 @@ func Strip(unencoded string) (clean string, err error) {
 
 	lenClean := len(clean)
 	if lenClean > 255 {
-		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
 	}
 	return clean, nil
 }
@@ -70,7 +70,7 @@ func Replace(unencoded, replace string) (clean string, err error) {
 
 	lenClean := len(clean)
 	if lenClean > 255 {
-		return "", fmt.Errorf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
 	}
 	return clean, nil
 }

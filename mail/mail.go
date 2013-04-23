@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/karlek/nyfiken/settings"
-	"github.com/mewkiz/pkg/errorsutil"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 // Send sends a mail to a mail address with the updates of the checked page and
@@ -40,7 +40,7 @@ Content-Type: text/html; charset="UTF-8"
 		[]byte(msg),                        // Content to send.
 	)
 	if err != nil {
-		return errorsutil.ErrorfColor("%s", err)
+		return errutil.Err(err)
 	}
 
 	return nil

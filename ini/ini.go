@@ -10,7 +10,7 @@ import (
 	"github.com/jteeuwen/ini"
 	"github.com/karlek/nyfiken/page"
 	"github.com/karlek/nyfiken/settings"
-	"github.com/mewkiz/pkg/errorsutil"
+	"github.com/mewkiz/pkg/errutil"
 )
 
 const (
@@ -19,22 +19,22 @@ const (
 	sectionMail     = "mail"
 
 	// INI field names.
-	fieldInterval       = "interval"
 	fieldBrowser        = "browser"
-	fieldPortNum        = "portnum"
-	fieldStrip          = "strip"
-	fieldSleepStart     = "sleepstart"
-	fieldRecvMail       = "recvmail"
 	fieldFilePerms      = "fileperms"
-	fieldSendMail       = "sendmail"
-	fieldSendPass       = "sendpass"
-	fieldSendAuthServer = "sendauthserver"
-	fieldSendOutServer  = "sendoutserver"
-	fieldSelection      = "sel"
-	fieldRegexp         = "regexp"
-	fieldNegexp         = "negexp"
-	fieldThreshold      = "threshold"
 	fieldHeader         = "header"
+	fieldInterval       = "interval"
+	fieldNegexp         = "negexp"
+	fieldPortNum        = "portnum"
+	fieldRecvMail       = "recvmail"
+	fieldRegexp         = "regexp"
+	fieldSelection      = "sel"
+	fieldSendAuthServer = "sendauthserver"
+	fieldSendMail       = "sendmail"
+	fieldSendOutServer  = "sendoutserver"
+	fieldSendPass       = "sendpass"
+	fieldSleepStart     = "sleepstart"
+	fieldStrip          = "strip"
+	fieldThreshold      = "threshold"
 )
 
 var (
@@ -82,13 +82,13 @@ func ReadIni(configPath, pagesPath string) (pages []*page.Page, err error) {
 	// Read config.
 	err = ReadSettings(configPath)
 	if err != nil {
-		return nil, err
+		return nil, errutil.Err(err)
 	}
 
 	// Read pages file.
 	pages, err = ReadPages(pagesPath)
 	if err != nil {
-		return nil, err
+		return nil, errutil.Err(err)
 	}
 
 	return pages, nil
@@ -100,7 +100,7 @@ func ReadSettings(configPath string) (err error) {
 	file := ini.New()
 	err = file.Load(configPath)
 	if err != nil {
-		return errorsutil.ErrorfColor("%s", err)
+		return errutil.Err(err)
 	}
 
 	config, settingExist := file.Sections[sectionSettings]
@@ -108,13 +108,13 @@ func ReadSettings(configPath string) (err error) {
 	if settingExist {
 		err = parseSettings(config)
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 	}
 	if mailExist {
 		err = parseMail(mail)
 		if err != nil {
-			return err
+			return errutil.Err(err)
 		}
 	}
 
@@ -125,7 +125,7 @@ func ReadSettings(configPath string) (err error) {
 func parseSettings(config ini.Section) (err error) {
 	for fieldName, _ := range config {
 		if _, found := settingsFields[fieldName]; !found {
-			return errorsutil.ErrorfColor(ErrFieldNotExist, fieldName)
+			return errutil.Newf(ErrFieldNotExist, fieldName)
 		}
 	}
 
@@ -135,7 +135,7 @@ func parseSettings(config ini.Section) (err error) {
 	// Parse string to duration.
 	settings.Global.Interval, err = time.ParseDuration(intervalStr)
 	if err != nil {
-		return errorsutil.ErrorfColor("%s", err)
+		return errutil.Err(err)
 	}
 
 	// Set global file permissions.
@@ -154,16 +154,16 @@ func parseSettings(config ini.Section) (err error) {
 func parseMail(mail ini.Section) (err error) {
 	for fieldName, _ := range mail {
 		if _, found := mailFields[fieldName]; !found {
-			return errorsutil.ErrorfColor(ErrFieldNotExist, fieldName)
+			return errutil.Newf(ErrFieldNotExist, fieldName)
 		}
 	}
 
 	// Set global sender mail.
 	settings.Global.SenderMail.Address = mail.S(fieldSendMail, "")
 	if settings.Global.SenderMail.Address == "" {
-		return errorsutil.ErrorfColor(ErrMailAddressNotFound)
+		return errutil.Newf(ErrMailAddressNotFound)
 	} else if !strings.Contains(settings.Global.SenderMail.Address, "@") {
-		return errorsutil.ErrorfColor(ErrInvalidMailAddress, settings.Global.SenderMail.Address)
+		return errutil.Newf(ErrInvalidMailAddress, settings.Global.SenderMail.Address)
 	}
 
 	// Set global sender mail password.
@@ -172,21 +172,21 @@ func parseMail(mail ini.Section) (err error) {
 	// Set global sender authorization server.
 	settings.Global.SenderMail.AuthServer = mail.S(fieldSendAuthServer, "")
 	if settings.Global.SenderMail.AuthServer == "" {
-		return errorsutil.ErrorfColor(ErrMailAuthServerNotFound)
+		return errutil.Newf(ErrMailAuthServerNotFound)
 	}
 
 	// Set global sender mail outgoing server.
 	settings.Global.SenderMail.OutServer = mail.S(fieldSendOutServer, "")
 	if settings.Global.SenderMail.OutServer == "" {
-		return errorsutil.ErrorfColor(ErrMailOutServerNotFound)
+		return errutil.Newf(ErrMailOutServerNotFound)
 	}
 
 	// Set global receive mail.
 	settings.Global.RecvMail = mail.S(fieldRecvMail, "")
 	if settings.Global.RecvMail == "" {
-		return errorsutil.ErrorfColor(ErrMailAddressNotFound)
+		return errutil.Newf(ErrMailAddressNotFound)
 	} else if !strings.Contains(settings.Global.RecvMail, "@") {
-		return errorsutil.ErrorfColor(ErrInvalidMailAddress, settings.Global.RecvMail)
+		return errutil.Newf(ErrInvalidMailAddress, settings.Global.RecvMail)
 	}
 
 	return nil
@@ -199,7 +199,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 	file := ini.New()
 	err = file.Load(pagesPath)
 	if err != nil {
-		return nil, errorsutil.ErrorfColor("%s", err)
+		return nil, errutil.Err(err)
 	}
 
 	// Loop through the INI sections ([section]) and parse page settings.
@@ -211,18 +211,17 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 
 		for fieldName, _ := range section {
 			if _, found := siteFields[fieldName]; !found {
-				return nil, errorsutil.ErrorfColor(ErrFieldNotExist, fieldName)
+				return nil, errutil.Newf(ErrFieldNotExist, fieldName)
 			}
 		}
 
-		// Sets the page variables.
 		var p page.Page
 		var pageSettings settings.Page
 
 		// Make INI section ([http://example.org]) into url.URL.
 		p.ReqUrl, err = url.Parse(name)
 		if err != nil {
-			return nil, errorsutil.ErrorfColor("%s", err)
+			return nil, errutil.Err(err)
 		}
 
 		// Set CSS selector.
@@ -243,13 +242,13 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		// Parse string to duration.
 		pageSettings.Interval, err = time.ParseDuration(intervalStr)
 		if err != nil {
-			return nil, errorsutil.ErrorfColor("%s", err)
+			return nil, errutil.Err(err)
 		}
 
 		// Set individual mail address.
 		pageSettings.RecvMail = section.S(fieldRecvMail, settings.Global.RecvMail)
 		if pageSettings.RecvMail != "" && !strings.Contains(pageSettings.RecvMail, "@") {
-			return nil, errorsutil.ErrorfColor(ErrInvalidMailAddress, pageSettings.RecvMail)
+			return nil, errutil.Newf(ErrInvalidMailAddress, pageSettings.RecvMail)
 		}
 
 		// Set individual header.
@@ -260,7 +259,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 				keyVal := strings.SplitN(header, ":", 2)
 				m[strings.TrimSpace(keyVal[0])] = strings.TrimSpace(keyVal[1])
 			} else {
-				return nil, errorsutil.ErrorfColor(ErrInvalidHeader, header)
+				return nil, errutil.Newf(ErrInvalidHeader, header)
 			}
 		}
 		pageSettings.Header = m
@@ -269,18 +268,17 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		pageSettings.StripFuncs = section.List(fieldStrip)
 		if pageSettings.StripFuncs == nil {
 			if _, found := section[fieldStrip]; found {
-				return nil, errorsutil.ErrorfColor(ErrInvalidListDeclaration)
+				return nil, errutil.Newf(ErrInvalidListDeclaration)
 			}
 		}
 
 		p.Settings = pageSettings
 
-		// Append to the pages array.
 		pages = append(pages, &p)
 	}
 
 	if pages == nil {
-		return nil, errorsutil.ErrorfColor("no pages in %s", settings.PagesPath)
+		return nil, errutil.Newf("no pages in %s", settings.PagesPath)
 	}
 	return pages, nil
 }
