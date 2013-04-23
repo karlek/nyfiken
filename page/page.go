@@ -234,26 +234,27 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 	for _, hit := range result {
 		selection += htmlutil.RenderToString(hit)
 	}
-	doc, err := html.Parse(strings.NewReader(selection))
-	if err != nil {
-		return "", errutil.Err(err)
-	}
 
 	// --- [ /CSS selection ] -------------------------------------------------/
 
 	// --- [ Strip funcs ] ----------------------------------------------------/
 
 	for _, stripFunc := range p.Settings.StripFuncs {
+		doc, err := html.Parse(strings.NewReader(selection))
+		if err != nil {
+			return "", errutil.Err(err)
+		}
 		stripFunc = strings.ToLower(stripFunc)
 		switch stripFunc {
 		case "numbers":
-			selection = strip.Numbers(doc)
+			strip.Numbers(doc)
 		case "attrs":
-			selection = strip.Attrs(doc)
+			strip.Attrs(doc)
 		case "html":
 			selection = strip.HTML(doc)
+			break
 		}
-		doc, err = html.Parse(strings.NewReader(selection))
+		selection, err = htmlutil.RenderClean(doc)
 		if err != nil {
 			return "", errutil.Err(err)
 		}

@@ -12,22 +12,20 @@ import (
 
 	"code.google.com/p/go.net/html"
 	"github.com/karlek/nyfiken/settings"
-	"github.com/mewkiz/pkg/htmlutil"
 )
 
-// Returns a number free string.
-func Numbers(doc *html.Node) (newSel string) {
+/// Returns a number free string.
+func Numbers(doc *html.Node) {
 	var f func(node *html.Node)
 	f = func(node *html.Node) {
 		if node.Type == html.TextNode {
 			text := strings.TrimSpace(node.Data)
-			var newSel string
+			node.Data = ""
 			for _, chr := range text {
 				if !unicode.IsDigit(chr) {
-					newSel += string(chr)
+					node.Data += string(chr)
 				}
 			}
-			node.Data = newSel
 		}
 
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
@@ -35,13 +33,10 @@ func Numbers(doc *html.Node) (newSel string) {
 		}
 	}
 	f(doc)
-
-	newSel, _ = htmlutil.RenderClean(doc)
-	return newSel
 }
 
-// Returns a string with empty HTML attributes.
-func Attrs(doc *html.Node) (newSel string) {
+/// Returns a string with empty HTML attributes.
+func Attrs(doc *html.Node) {
 	var f func(node *html.Node)
 	f = func(node *html.Node) {
 		if node.Type == html.ElementNode {
@@ -53,9 +48,6 @@ func Attrs(doc *html.Node) (newSel string) {
 		}
 	}
 	f(doc)
-
-	newSel, _ = htmlutil.RenderClean(doc)
-	return newSel
 }
 
 // Returns a HTML free string.
