@@ -239,6 +239,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 
 	// --- [ Strip funcs ] ----------------------------------------------------/
 
+strips:
 	for _, stripFunc := range p.Settings.StripFuncs {
 		doc, err := html.Parse(strings.NewReader(selection))
 		if err != nil {
@@ -252,7 +253,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 			strip.Attrs(doc)
 		case "html":
 			selection = strip.HTML(doc)
-			break
+			break strips
 		}
 		selection, err = htmlutil.RenderClean(doc)
 		if err != nil {

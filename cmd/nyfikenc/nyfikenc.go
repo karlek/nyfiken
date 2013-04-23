@@ -40,7 +40,7 @@ func main() {
 	flag.Parse()
 	err := nyfikenc()
 	if err != nil {
-		log.Fatalln(errutil.Err(err))
+		log.Fatalln(err)
 	}
 }
 
@@ -49,7 +49,14 @@ func nyfikenc() (err error) {
 	// Connect to nyfikend.
 	conn, err := net.Dial("tcp", "localhost"+settings.Global.PortNum)
 	if err != nil {
-		return errutil.Err(err)
+		switch e := err.(type) {
+		case (*net.OpError):
+			if e.Err.Error() == "connection refused" {
+				return errutil.NewNoPos("nyfikenc: unable to connect to nyfikend. Please make sure that the daemon is running.")
+			}
+		default:
+			return err
+		}
 	}
 	bw := bufioutil.NewWriter(conn)
 
