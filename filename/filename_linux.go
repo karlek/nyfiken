@@ -1,76 +1,73 @@
-// Package filename filters disallowed characters from strings to make them
-// usable as filenames.
+// Linux blacklisted characters:
+//
+//		`/`
+//		`\0`
 package filename
 
 import (
-	"github.com/mewkiz/pkg/errutil"
+	"fmt"
+	"net/url"
 )
 
 const (
-	Ext4MaxLength = 255
+	Ext4MaxLength = 255 // Longest allowed filename on ext-4.
 )
 
-// Encodes linux filename hostile characters.
-// Blacklisted:
-//	`/`
-//	`\0`
-func Encode(unencoded string) (clean string, err error) {
-	for _, chr := range unencoded {
-		switch chr {
-		case '/':
-			clean += `%2f`
-		case 0x00:
-			clean += "%00"
+// Encode encodes linux filename hostile characters from string unsafe with
+// percent-encoding.
+func Encode(unsafe string) (clean string, err error) {
+	for _, chr := range unsafe {
+		switch {
+		case IsHostile(chr):
+			clean += url.QueryEscape(string(chr))
 		default:
 			clean += string(chr)
 		}
 	}
-
-	lenClean := len(clean)
-	if lenClean > 255 {
-		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+	if !IsSafeLen(clean) {
+		return "", fmt.Errorf(ErrInvalidFileNameLength, len(clean), Ext4MaxLength)
 	}
 	return clean, nil
 }
 
-// Removes linux filename hostile characters.
-// Blacklisted:
-//	`/`
-//	`\0`
-func Strip(unencoded string) (clean string, err error) {
-	for _, chr := range unencoded {
-		switch chr {
-		case '/', 0x00:
+// IsSafeLen verifies if string s has an allowed filename length.
+func IsSafeLen(s string) bool {
+	return len(s) < Ext4MaxLength
+}
+
+// Strip removes linux filename hostile characters from string unsafe.
+func Strip(unsafe string) (clean string, err error) {
+	for _, chr := range unsafe {
+		switch {
+		case IsHostile(chr):
 			continue
 		default:
 			clean += string(chr)
 		}
 	}
-
-	lenClean := len(clean)
-	if lenClean > 255 {
-		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+	if !IsSafeLen(clean) {
+		return "", fmt.Errorf(ErrInvalidFileNameLength, len(clean), Ext4MaxLength)
 	}
 	return clean, nil
 }
 
-// Replaces linux filename hostile characters with user supplied string.
-// Blacklisted:
-//	`/`
-//	`\0`
-func Replace(unencoded, replace string) (clean string, err error) {
-	for _, chr := range unencoded {
-		switch chr {
-		case '/', 0x00:
+// Replace replaces linux filename hostile characters in string unsafe with string replace.
+func Replace(unsafe, replace string) (clean string, err error) {
+	for _, chr := range unsafe {
+		switch {
+		case IsHostile(chr):
 			clean += replace
 		default:
 			clean += string(chr)
 		}
 	}
-
-	lenClean := len(clean)
-	if lenClean > 255 {
-		return "", errutil.Newf(ErrInvalidFileNameLength, lenClean, Ext4MaxLength)
+	if !IsSafeLen(clean) {
+		return "", fmt.Errorf(ErrInvalidFileNameLength, len(clean), Ext4MaxLength)
 	}
 	return clean, nil
+}
+
+// IsHostile verifies if rune r is a linux filename hostile characters.
+func IsHostile(r rune) bool {
+	return r == '/' || r == 0x00
 }

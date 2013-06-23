@@ -14,18 +14,18 @@ import (
 	"github.com/karlek/nyfiken/settings"
 )
 
-/// Returns a number free string.
+// Numbers removes numbers from all text nodes in an html.Node.
 func Numbers(doc *html.Node) {
 	var f func(node *html.Node)
 	f = func(node *html.Node) {
 		if node.Type == html.TextNode {
-			text := strings.TrimSpace(node.Data)
-			node.Data = ""
-			for _, chr := range text {
+			newSel := ""
+			for _, chr := range node.Data {
 				if !unicode.IsDigit(chr) {
-					node.Data += string(chr)
+					newSel += string(chr)
 				}
 			}
+			node.Data = newSel
 		}
 
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
@@ -35,7 +35,7 @@ func Numbers(doc *html.Node) {
 	f(doc)
 }
 
-/// Returns a string with empty HTML attributes.
+// Attrs removes all HTML attributes from an html.Node.
 func Attrs(doc *html.Node) {
 	var f func(node *html.Node)
 	f = func(node *html.Node) {
@@ -50,8 +50,9 @@ func Attrs(doc *html.Node) {
 	f(doc)
 }
 
-// Returns a HTML free string.
-func HTML(doc *html.Node) (newSel string) {
+// HTML removes HTML from an html.Node and returns a clean string.
+func HTML(doc *html.Node) {
+	var newSel string
 	var f func(node *html.Node, newSel *string)
 	f = func(node *html.Node, newSel *string) {
 		if node.Type == html.TextNode {
@@ -64,5 +65,7 @@ func HTML(doc *html.Node) (newSel string) {
 	}
 	f(doc, &newSel)
 
-	return newSel
+	/// Check for errors
+	stringNode, _ := html.Parse(strings.NewReader(newSel))
+	*doc = *stringNode
 }

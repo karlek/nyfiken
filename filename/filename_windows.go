@@ -1,8 +1,3 @@
-// Package filename filters disallowed characters from strings to make them
-// usable as filenames.
-//
-// *Warning* - Filename is not safe to use since all restrictions have not been
-// added.
 package filename
 
 import (

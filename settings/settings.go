@@ -11,12 +11,62 @@ import (
 	"github.com/mewkiz/pkg/osutil"
 )
 
-// When an update is found, log it incase we get asked by nyfikenc for updates.
+// Queries sent from the client to the daemon.
+const (
+	QueryClearAll     = "clear all!"
+	QueryForceRecheck = "recheck!"
+	QueryUpdates      = "updates?"
+)
+
+// Default values.
+const (
+	// Default interval between updates unless overwritten in config file.
+	DefaultInterval = 1 * time.Minute
+
+	// Duration until a timeout is issued.
+	TimeoutDuration = 10 * time.Second
+
+	// Default permissions to create files: user read and write permissions.
+	DefaultFilePerms   = os.FileMode(0600)
+	DefaultFolderPerms = os.FileMode(0755)
+
+	// Default newline character.
+	Newline = "\n"
+
+	// Default port number for nyfikenc/d connection.
+	DefaultPortNum = ":5239"
+)
+
+// Paths to nyfiken files.
+var (
+	NyfikenRoot string
+	ConfigPath  string
+	PagesPath   string
+	CacheRoot   string
+	UpdatesPath string
+)
+
+var (
+	// Updates is a collection of all pages which have been determined to have
+	// changed since the last check.
+	Updates map[Update]bool
+
+	// Settings which will be used unless overwritten by site-specific settings.
+	Global = Prog{
+		Interval:  DefaultInterval,
+		FilePerms: DefaultFilePerms,
+		PortNum:   DefaultPortNum,
+	}
+)
+
+// Update is an URL which have been determined to have been changed since last
+// check.
 type Update struct {
 	ReqUrl string
 }
 
-// Page settings on how the program shall check the page.
+// Page is a collection of specialized settings used to eliminate
+// false-positives. Page settings override program global settings.
 type Page struct {
 	Interval   time.Duration     // Duration of time to wait between scrapes.
 	Threshold  float64           // Percentage of accepted deviation from last scrape.
@@ -28,8 +78,8 @@ type Page struct {
 	Selection  string            // CSS selector string to specify what to select.
 }
 
-// Program global settings which regards all pages unless overwritten with page
-// specific.
+// Prog is the program global settings which regards all pages unless
+// overwritten with page specific settings.
 type Prog struct {
 	Interval   time.Duration // Duration of time to wait between scrapes.
 	RecvMail   string        // Mail address to send a notification when a page has been updated.
@@ -46,48 +96,6 @@ type Prog struct {
 		OutServer  string // Outgoing server to the mail address.
 	}
 }
-
-const (
-	// Queries sent from the client to the daemon.
-	QueryClearAll     = "clear all!"
-	QueryForceRecheck = "recheck!"
-	QueryUpdates      = "updates?"
-
-	// Default interval between updates unless overwritten in config file.
-	DefaultInterval = 1 * time.Minute
-
-	// Default permissions to create files: user read and write permissions.
-	DefaultFilePerms   = os.FileMode(0600)
-	DefaultFolderPerms = os.FileMode(0755)
-
-	// Default newline character
-	Newline = "\n"
-
-	// Default port number for nyfikenc/d connection.
-	DefaultPortNum = ":5239"
-)
-
-var (
-	// Paths to nyfiken files.
-	NyfikenRoot string
-	ConfigPath  string
-	PagesPath   string
-	CacheRoot   string
-	UpdatesPath string
-
-	// A map of updates that have been logged.
-	Updates map[Update]bool
-
-	// Duration until a timeout is issued
-	TimeoutDuration = 10 * time.Second
-
-	// Settings which will be used unless overwritten by site-specific settings.
-	Global = Prog{
-		Interval:  DefaultInterval,
-		FilePerms: DefaultFilePerms,
-		PortNum:   DefaultPortNum,
-	}
-)
 
 // Error wrapper.
 func init() {
@@ -139,7 +147,7 @@ func initialize() (err error) {
 	return nil
 }
 
-// Saves uncleared updates for next execution.
+// SaveUpdates saves uncleared updates for next execution.
 func SaveUpdates() (err error) {
 	f, err := os.Create(UpdatesPath)
 	if err != nil {
@@ -156,7 +164,7 @@ func SaveUpdates() (err error) {
 	return nil
 }
 
-// Retrieves uncleared updates from last execution.
+// LoadUpdates retrieves saved updates from last execution.
 func LoadUpdates() (err error) {
 	f, err := os.Open(UpdatesPath)
 	if err != nil {

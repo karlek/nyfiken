@@ -12,7 +12,7 @@ import (
 	"github.com/mewkiz/pkg/errutil"
 )
 
-// Listen makes the server wait for a connection from a client.
+// Listen makes nyfikend wait for a connection from nyfikenc.
 func Listen() {
 	err := errWrapListen()
 	if err != nil {

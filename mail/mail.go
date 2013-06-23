@@ -1,4 +1,4 @@
-// Package mail notifies the user about updates on checked pages.
+// Package mail adds functions for mailing users about updates on checked pages.
 package mail
 
 import (
@@ -9,9 +9,9 @@ import (
 	"github.com/mewkiz/pkg/errutil"
 )
 
-// Send sends a mail to a mail address with the updates of the checked page and
+// Send sends a mail to a mail address with the contents of the checked page and
 // the URL to the checked page.
-func Send(pageUrl url.URL, toMailAddress string, body string) (err error) {
+func Send(pageUrl url.URL, receivingMail string, body string) (err error) {
 	// Set up authentication information.
 	auth := smtp.PlainAuth(
 		"",
@@ -23,7 +23,7 @@ func Send(pageUrl url.URL, toMailAddress string, body string) (err error) {
 	// Connect to the server, authenticate, set the sender and recipient,
 	// and send the email all in one step.
 	var msg = `From: ` + settings.Global.SenderMail.Address + `
-To: ` + toMailAddress + `
+To: ` + receivingMail + `
 Subject: [ nyfiken ] ` + pageUrl.Host + `: update
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -36,7 +36,7 @@ Content-Type: text/html; charset="UTF-8"
 		settings.Global.SenderMail.OutServer, // Outgoing server.
 		auth, // Authorization information.
 		settings.Global.SenderMail.Address, // From what mail.
-		[]string{toMailAddress},            // To which mail.
+		[]string{receivingMail},            // To which mail.
 		[]byte(msg),                        // Content to send.
 	)
 	if err != nil {

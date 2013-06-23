@@ -1,4 +1,4 @@
-// Package ini adds functionality to retrieve configuration from INI files.
+// Package ini retrieves configuration for nyfiken programs from INI files.
 package ini
 
 import (
@@ -13,12 +13,14 @@ import (
 	"github.com/mewkiz/pkg/errutil"
 )
 
+// INI sections (i.e. [sectionName]).
 const (
-	// INI sections (i.e. [sectionName]).
 	sectionSettings = "settings"
 	sectionMail     = "mail"
+)
 
-	// INI field names.
+// INI field names.
+const (
 	fieldBrowser        = "browser"
 	fieldFilePerms      = "fileperms"
 	fieldHeader         = "header"
@@ -62,22 +64,30 @@ var (
 		fieldPortNum:   true,
 		fieldFilePerms: true,
 	}
+)
 
-	// Error messages.
+// Error messages.
+var (
 	ErrFieldNotExist          = "ini: field `%s` doesn't exist."
 	ErrNoSectionSettings      = "ini: no [" + sectionSettings + "] section found config.ini."
 	ErrNoSectionMail          = "ini: no [" + sectionMail + "] section found in config.ini."
 	ErrInvalidMailAddress     = "ini: invalid mail: `%s`; correct syntax -> `name@domain.tld`."
 	ErrInvalidHeader          = "ini: invalid header: `%s`; correct syntax -> `HeaderName: Value`."
+	ErrInvalidStripFunction   = "ini: invalid strip function: `%s`."
 	ErrInvalidRandInterval    = "ini: invalid random interval: %s; correct syntax -> `duration duration`."
 	ErrMailAddressNotFound    = "ini: global receiving mail required."
 	ErrMailAuthServerNotFound = "ini: sending mail authorization server required."
 	ErrMailOutServerNotFound  = "ini: sending mail outgoing server required."
 	ErrInvalidListDeclaration = "ini: use `<` instead of `=` for list values."
+
+	StripFunctions = map[string]bool{
+		"html":    true,
+		"attrs":   true,
+		"numbers": true,
+	}
 )
 
-// Read config file which in turn updates settings.Global and returns a slice of
-// all pages to scrape.
+// ReadIni is a convenience function wrapping ReadSettings and ReadPages.
 func ReadIni(configPath, pagesPath string) (pages []*page.Page, err error) {
 	// Read config.
 	err = ReadSettings(configPath)
@@ -94,7 +104,7 @@ func ReadIni(configPath, pagesPath string) (pages []*page.Page, err error) {
 	return pages, nil
 }
 
-// Reads config file and updates settings.Global.
+// ReadSettings reads settings file and updates settings.Global.
 func ReadSettings(configPath string) (err error) {
 	// Parse config file.
 	file := ini.New()
@@ -192,7 +202,7 @@ func parseMail(mail ini.Section) (err error) {
 	return nil
 }
 
-// Reads pages file and returns a slice of pages.
+// ReadPages reads pages file and returns a slice of pages.
 func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 
 	// Parse pages file.
@@ -271,7 +281,11 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 				return nil, errutil.NewNoPosf(ErrInvalidListDeclaration)
 			}
 		}
-
+		for _, stripFunc := range pageSettings.StripFuncs {
+			if _, found := StripFunctions[stripFunc]; !found {
+				return nil, errutil.NewNoPosf(ErrInvalidStripFunction, stripFunc)
+			}
+		}
 		p.Settings = pageSettings
 
 		pages = append(pages, &p)

@@ -11,7 +11,7 @@ func TestEncode(t *testing.T) {
 		filename string
 		out      string
 	}{
-		{"asdf/", "asdf%2f"},
+		{"asdf/", "asdf%2F"},
 		{"asdf" + string(0x00), "asdf%00"},
 		{"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfa/", ""},
 	}

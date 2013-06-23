@@ -22,16 +22,16 @@ import (
 	"github.com/mewkiz/pkg/htmlutil"
 )
 
-// Pages are checked if they have changed and based on user settings
-// special selections are made to eliminate false-positives.
+// Page is a site which is checked for changes. It has specialized settings to
+// eliminate false-positives.
 type Page struct {
 	ReqUrl   *url.URL
 	Settings settings.Page
 }
 
-// Check downloads the page, extracts the wanted selection and makes a comparison
-// with a previous check to determine if the page has been updated. Check takes
-// an error channel to send errors to be printed.
+// Check downloads and makes a specialized comparison with a previous check
+// saved on disk to determine if the page has been updated. Check takes
+// an error channel to concurrently handle errors.
 func (p *Page) Check(ch chan<- error) {
 	ch <- p.check()
 }
@@ -86,6 +86,7 @@ func (p *Page) check() (err error) {
 
 	// The distance between to strings in percentage.
 	dist := strmetr.Approx(string(buf), selection)
+
 	// If the distance is within the threshold level, i.e if the check was a
 	// match.
 	if dist > p.Settings.Threshold {
@@ -238,7 +239,6 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 
 	// --- [ Strip funcs ] ----------------------------------------------------/
 
-strips:
 	for _, stripFunc := range p.Settings.StripFuncs {
 		doc, err := html.Parse(strings.NewReader(selection))
 		if err != nil {
@@ -251,9 +251,9 @@ strips:
 		case "attrs":
 			strip.Attrs(doc)
 		case "html":
-			selection = strip.HTML(doc)
-			break strips
+			strip.HTML(doc)
 		}
+
 		selection, err = htmlutil.RenderClean(doc)
 		if err != nil {
 			return "", errutil.Err(err)

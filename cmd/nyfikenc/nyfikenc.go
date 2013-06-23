@@ -1,4 +1,4 @@
-// A client program to check and handle updates from nyfiken daemon.
+// Nyfikenc is a client program to check and handle updates from nyfiken daemon.
 package main
 
 import (
@@ -49,7 +49,6 @@ func main() {
 }
 
 func nyfikenc() (err error) {
-
 	// Connect to nyfikend.
 	conn, err := net.Dial("tcp", "localhost"+settings.Global.PortNum)
 	if err != nil {
@@ -122,20 +121,22 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		return nil
 	}
 
+	argumentStr := ""
 	// Loop through all updates and open them with the browser
 	for up, _ := range ups {
-		cmd := exec.Command(settings.Global.Browser, up.ReqUrl)
-		err := cmd.Start()
-		if err != nil {
-			return errutil.Err(err)
-		}
-		err = cmd.Wait()
-		if err != nil {
-			return errutil.Err(err)
-		}
+		argumentStr += up.ReqUrl + " "
 	}
-
-	fmt.Println("Opening all updates with:", settings.Global.Browser)
+	cmd := exec.Command(settings.Global.Browser, argumentStr)
+	err = cmd.Start()
+	if err != nil {
+		return errutil.Err(err)
+	}
+	err = cmd.Wait()
+	if err != nil {
+		return errutil.Err(err)
+	}
+	fmt.Println("arg string")
+	// fmt.Println("Opening all updates with:", settings.Global.Browser)
 	return nil
 }
 

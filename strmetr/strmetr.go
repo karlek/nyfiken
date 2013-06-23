@@ -1,4 +1,4 @@
-// A package that measures the distances between to strings
+// Package strmeter measures the distances between two strings.
 package strmetr
 
 // An ad-hoc function for a percentage difference between two strings.
