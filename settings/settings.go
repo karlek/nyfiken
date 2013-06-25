@@ -57,6 +57,8 @@ var (
 		FilePerms: DefaultFilePerms,
 		PortNum:   DefaultPortNum,
 	}
+	// When Verbose is true, enable verbose output.
+	Verbose bool
 )
 
 // Update is an URL which have been determined to have been changed since last

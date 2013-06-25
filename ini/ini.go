@@ -2,6 +2,7 @@
 package ini
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -217,6 +218,10 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		// Skip global scope INI values since they are empty.
 		if len(name) == 0 {
 			continue
+		}
+
+		if settings.Verbose {
+			fmt.Println("[!] Watching:", name)
 		}
 
 		for fieldName, _ := range section {

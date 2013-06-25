@@ -2,6 +2,7 @@
 package page
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,6 +39,10 @@ func (p *Page) Check(ch chan<- error) {
 
 // check is an non-exported function for better error handling.
 func (p *Page) check() (err error) {
+	if settings.Verbose {
+		fmt.Println("[!] Downloading:", p.ReqUrl.String())
+	}
+
 	// Retrieve result from download or return timeout error.
 	var r struct {
 		*html.Node
@@ -68,20 +73,25 @@ func (p *Page) check() (err error) {
 	// Read in comparison.
 	buf, err := ioutil.ReadFile(cachePathName)
 	if err != nil {
-		// If the page hasn't been checked before, create a new comparison file.
-		if os.IsNotExist(err) {
-			err = ioutil.WriteFile(
-				cachePathName,
-				[]byte(selection),
-				settings.Global.FilePerms,
-			)
-			if err != nil {
-				return errutil.Err(err)
-			}
-			return nil
-		} else {
+		if !os.IsNotExist(err) {
 			return errutil.Err(err)
 		}
+
+		// If the page hasn't been checked before, create a new comparison file.
+		err = ioutil.WriteFile(
+			cachePathName,
+			[]byte(selection),
+			settings.Global.FilePerms,
+		)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
+		if settings.Verbose {
+			fmt.Println("[!] New site added:", p.ReqUrl.String())
+		}
+
+		return nil
 	}
 
 	// The distance between to strings in percentage.
@@ -92,6 +102,10 @@ func (p *Page) check() (err error) {
 	if dist > p.Settings.Threshold {
 		u := settings.Update{p.ReqUrl.String()}
 		settings.Updates[u] = true
+
+		if settings.Verbose {
+			fmt.Println("[!] Updated:", u)
+		}
 
 		// Save updates to file.
 		err = settings.SaveUpdates()
@@ -127,6 +141,10 @@ func (p *Page) check() (err error) {
 		err = ioutil.WriteFile(cachePathName, []byte(selection), settings.Global.FilePerms)
 		if err != nil {
 			return errutil.Err(err)
+		}
+	} else {
+		if settings.Verbose {
+			fmt.Println("[!] No update:", p.ReqUrl.String())
 		}
 	}
 	return nil

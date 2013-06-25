@@ -3,8 +3,11 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"math"
+	"os"
 	"runtime"
 	"time"
 
@@ -16,8 +19,21 @@ import (
 	"github.com/mewkiz/pkg/errutil"
 )
 
+func init() {
+	flag.BoolVar(&settings.Verbose, "v", false, "Verbose.")
+	flag.Usage = usage
+}
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "nyfikend [OPTION]")
+	fmt.Fprintln(os.Stderr)
+	flag.PrintDefaults()
+	fmt.Fprintln(os.Stderr)
+}
+
 // Error wrapper.
 func main() {
+	flag.Parse()
 	err := nyfikend()
 	if err != nil {
 		log.Fatalln(errutil.Err(err))
