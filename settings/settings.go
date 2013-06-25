@@ -117,7 +117,7 @@ func initialize() (err error) {
 
 	// Load uncleared updates from last execution.
 	err = LoadUpdates()
-	if !os.IsNotExist(err) && err != nil {
+	if err != nil {
 		return errutil.Err(err)
 	}
 
@@ -168,6 +168,9 @@ func SaveUpdates() (err error) {
 func LoadUpdates() (err error) {
 	f, err := os.Open(UpdatesPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return errutil.Err(err)
 	}
 	defer f.Close()
