@@ -104,7 +104,7 @@ func (p *Page) check() (err error) {
 		settings.Updates[u] = true
 
 		if settings.Verbose {
-			fmt.Println("[!] Updated:", u)
+			fmt.Println("[!] Updated:", p.ReqUrl.String())
 		}
 
 		// Save updates to file.

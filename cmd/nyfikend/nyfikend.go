@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math"
 	"os"
@@ -13,14 +14,18 @@ import (
 
 	"github.com/howeyc/fsnotify"
 	"github.com/karlek/nyfiken/cli"
+	"github.com/karlek/nyfiken/filename"
 	"github.com/karlek/nyfiken/ini"
 	"github.com/karlek/nyfiken/page"
 	"github.com/karlek/nyfiken/settings"
 	"github.com/mewkiz/pkg/errutil"
 )
 
+var flagClean bool
+
 func init() {
 	flag.BoolVar(&settings.Verbose, "v", false, "Verbose.")
+	flag.BoolVar(&flagClean, "c", false, "Remove old cache files.")
 	flag.Usage = usage
 }
 
@@ -43,6 +48,10 @@ func main() {
 var pages []*page.Page
 
 func nyfikend() (err error) {
+	if flagClean {
+		return clean()
+	}
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	pages, err = ini.ReadIni(settings.ConfigPath, settings.PagesPath)
@@ -119,4 +128,40 @@ func watchConfig(watcher *fsnotify.Watcher) {
 			log.Fatalln(errutil.Err(err))
 		}
 	}
+}
+
+func clean() (err error) {
+	pages, err := ini.ReadPages(settings.PagesPath)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	caches, err := ioutil.ReadDir(settings.CacheRoot)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	var willBeRemoved []string
+	for _, cache := range caches {
+		remove := true
+		for _, p := range pages {
+			fname, err := filename.Encode(p.ReqUrl.String())
+			fmt.Println(filename.Encode(p.ReqUrl.String()))
+			if err != nil {
+				return errutil.Err(err)
+			}
+			if cache.Name() == fname {
+				remove = false
+				continue
+			}
+		}
+		if remove {
+			willBeRemoved = append(willBeRemoved, cache.Name())
+		}
+	}
+	for _, r := range willBeRemoved {
+		fmt.Println(r)
+	}
+
+	return nil
 }

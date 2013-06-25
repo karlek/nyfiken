@@ -121,12 +121,12 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		return nil
 	}
 
-	argumentStr := ""
+	var arguments []string
 	// Loop through all updates and open them with the browser
 	for up, _ := range ups {
-		argumentStr += up.ReqUrl + " "
+		arguments = append(arguments, up.ReqUrl)
 	}
-	cmd := exec.Command(settings.Global.Browser, argumentStr)
+	cmd := exec.Command(settings.Global.Browser, arguments...)
 	err = cmd.Start()
 	if err != nil {
 		return errutil.Err(err)
@@ -135,8 +135,6 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	if err != nil {
 		return errutil.Err(err)
 	}
-	fmt.Println("arg string")
-	// fmt.Println("Opening all updates with:", settings.Global.Browser)
 	return nil
 }
 
