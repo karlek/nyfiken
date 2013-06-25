@@ -40,7 +40,7 @@ func (p *Page) Check(ch chan<- error) {
 // check is an non-exported function for better error handling.
 func (p *Page) check() (err error) {
 	if settings.Verbose {
-		fmt.Println("[!] Downloading:", p.ReqUrl.String())
+		fmt.Println("[/] Downloading:", p.ReqUrl.String())
 	}
 
 	// Retrieve result from download or return timeout error.
@@ -88,7 +88,7 @@ func (p *Page) check() (err error) {
 		}
 
 		if settings.Verbose {
-			fmt.Println("[!] New site added:", p.ReqUrl.String())
+			fmt.Println("[+] New site added:", p.ReqUrl.String())
 		}
 
 		return nil
@@ -144,7 +144,7 @@ func (p *Page) check() (err error) {
 		}
 	} else {
 		if settings.Verbose {
-			fmt.Println("[!] No update:", p.ReqUrl.String())
+			fmt.Println("[-] No update:", p.ReqUrl.String())
 		}
 	}
 	return nil

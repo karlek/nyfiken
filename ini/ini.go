@@ -221,7 +221,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		}
 
 		if settings.Verbose {
-			fmt.Println("[!] Watching:", name)
+			fmt.Println("[o] Watching:", name)
 		}
 
 		for fieldName, _ := range section {

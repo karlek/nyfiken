@@ -130,6 +130,7 @@ func watchConfig(watcher *fsnotify.Watcher) {
 	}
 }
 
+// clean removes old cache files from cache root.
 func clean() (err error) {
 	pages, err := ini.ReadPages(settings.PagesPath)
 	if err != nil {
@@ -146,21 +147,23 @@ func clean() (err error) {
 		remove := true
 		for _, p := range pages {
 			fname, err := filename.Encode(p.ReqUrl.String())
-			fmt.Println(filename.Encode(p.ReqUrl.String()))
 			if err != nil {
 				return errutil.Err(err)
 			}
-			if cache.Name() == fname {
+			if cache.Name() == fname+".htm" {
 				remove = false
 				continue
 			}
 		}
 		if remove {
-			willBeRemoved = append(willBeRemoved, cache.Name())
+			willBeRemoved = append(willBeRemoved, settings.CacheRoot+cache.Name())
 		}
 	}
-	for _, r := range willBeRemoved {
-		fmt.Println(r)
+	for _, rm := range willBeRemoved {
+		err = os.Remove(rm)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
