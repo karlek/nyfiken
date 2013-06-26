@@ -26,11 +26,13 @@ const (
 var flagRecheck bool
 var flagClearAll bool
 var flagReadAll bool
+var flagReadAndClearAll bool
 
 func init() {
 	flag.BoolVar(&flagRecheck, "f", false, "forces a recheck.")
 	flag.BoolVar(&flagReadAll, "r", false, "read all updated pages in your browser.")
 	flag.BoolVar(&flagClearAll, "c", false, "will clear list of updated sites.")
+	flag.BoolVar(&flagReadAndClearAll, "rc", false, "read all updated pages in your browser and clear the list of updated sites.")
 	flag.Usage = usage
 }
 
@@ -67,6 +69,7 @@ func nyfikenc() (err error) {
 	// Command-line flag check
 	if flagRecheck ||
 		flagClearAll ||
+		flagReadAndClearAll ||
 		flagReadAll {
 		if flagRecheck {
 			return force(&bw)
@@ -76,6 +79,13 @@ func nyfikenc() (err error) {
 		}
 		if flagReadAll {
 			return readAll(&bw, conn)
+		}
+		if flagReadAndClearAll {
+			err = readAll(&bw, conn)
+			if err != nil {
+				return err
+			}
+			return clearAll(&bw, conn)
 		}
 	}
 
