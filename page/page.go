@@ -87,6 +87,17 @@ func (p *Page) check() (err error) {
 			return errutil.Err(err)
 		}
 
+		prevPathName := settings.PrevRoot + linuxPath + ".htm"
+		// If the page hasn't been checked before, create a new comparison file.
+		err = ioutil.WriteFile(
+			prevPathName,
+			[]byte(selection),
+			settings.Global.FilePerms,
+		)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
 		if settings.Verbose {
 			fmt.Println("[+] New site added:", p.ReqUrl.String())
 		}

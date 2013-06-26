@@ -50,31 +50,33 @@ func errWrapTakeInput(conn net.Conn, outerErrChan chan error) {
 
 // Wait for input and send output to client.
 func takeInput(conn net.Conn) (err error) {
-	query, err := bufioutil.NewReader(conn).ReadLine()
-	if err != nil {
-		if err.Error() != "EOF" {
+	for {
+		query, err := bufioutil.NewReader(conn).ReadLine()
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			return errutil.Err(err)
+		}
+
+		// Do something with the query
+		switch query {
+		case settings.QueryUpdates:
+			// Will write to network.
+			enc := gob.NewEncoder(conn)
+
+			// Encode (send) the value.
+			err = enc.Encode(settings.Updates)
+		case settings.QueryClearAll:
+			settings.Updates = make(map[settings.Update]bool)
+			err = settings.SaveUpdates()
+		case settings.QueryForceRecheck:
+			err = forceUpdate()
+		}
+		if err != nil {
 			return errutil.Err(err)
 		}
 	}
-
-	// Do something with the query
-	switch query {
-	case settings.QueryUpdates:
-		// Will write to network.
-		enc := gob.NewEncoder(conn)
-
-		// Encode (send) the value.
-		err = enc.Encode(settings.Updates)
-	case settings.QueryClearAll:
-		settings.Updates = make(map[settings.Update]bool)
-		err = settings.SaveUpdates()
-	case settings.QueryForceRecheck:
-		err = forceUpdate()
-	}
-	if err != nil {
-		return errutil.Err(err)
-	}
-
 	return nil
 }
 

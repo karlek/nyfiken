@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -73,7 +72,7 @@ func nyfikenc() (err error) {
 			return force(&bw)
 		}
 		if flagClearAll {
-			return clearAll(&bw)
+			return clearAll(&bw, conn)
 		}
 		if flagReadAll {
 			return readAll(&bw, conn)
@@ -139,33 +138,39 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		return errutil.Err(err)
 	}
 
-	caches, err := ioutil.ReadDir(settings.CacheRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-
-	for _, cache := range caches {
-		fname, err := filename.Encode(cache.Name())
-		if err != nil {
-			return err
-		}
-		cacheFile, err := os.Open(settings.CacheRoot + fname)
-		if err != nil {
-			return err
-		}
-		prevFile, err := os.Create(settings.PrevRoot + fname)
-		if err != nil {
-			return err
-		}
-
-		io.Copy(prevFile, cacheFile)
-	}
-
 	return nil
 }
 
 // Removes all updates.
-func clearAll(bw *bufioutil.Writer) (err error) {
+func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
+	ups, err := getUpdates(bw, conn)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	for up, _ := range ups {
+		fname, err := filename.Encode(up.ReqUrl)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
+		cacheFile, err := os.Open(settings.CacheRoot + fname + ".htm")
+		if err != nil {
+			return errutil.Err(err)
+		}
+		defer cacheFile.Close()
+		prevFile, err := os.Create(settings.PrevRoot + fname + ".htm")
+		if err != nil {
+			return errutil.Err(err)
+		}
+		defer prevFile.Close()
+
+		_, err = io.Copy(prevFile, cacheFile)
+		if err != nil {
+			return errutil.Err(err)
+		}
+	}
+
 	// Send nyfikend a query to clear updates.
 	_, err = bw.WriteLine(settings.QueryClearAll)
 	if err != nil {
