@@ -50,6 +50,22 @@ func Attrs(doc *html.Node) {
 	f(doc)
 }
 
+// Scripts removes all script elements from an html.Node.
+func Scripts(doc *html.Node) {
+	var f func(node *html.Node)
+	f = func(node *html.Node) {
+		if node.Type == html.ElementNode && node.Data == "script" {
+			node = nil
+			return
+		}
+
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(doc)
+}
+
 // HTML removes HTML from an html.Node and returns a clean string.
 func HTML(doc *html.Node) {
 	var newSel string

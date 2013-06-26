@@ -281,6 +281,8 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 			strip.Attrs(doc)
 		case "html":
 			strip.HTML(doc)
+		case "scripts":
+			strip.Scripts(doc)
 		}
 
 		selection, err = htmlutil.RenderClean(doc)
