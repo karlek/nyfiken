@@ -169,6 +169,23 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		if err != nil {
 			return errutil.Err(err)
 		}
+
+		// Debug
+		debugCacheFile, err := os.Open(settings.DebugCacheRoot + fname + ".htm")
+		if err != nil {
+			return errutil.Err(err)
+		}
+		defer cacheFile.Close()
+		debugPrevFile, err := os.Create(settings.DebugPrevRoot + fname + ".htm")
+		if err != nil {
+			return errutil.Err(err)
+		}
+		defer prevFile.Close()
+
+		_, err = io.Copy(debugPrevFile, debugCacheFile)
+		if err != nil {
+			return errutil.Err(err)
+		}
 	}
 
 	// Send nyfikend a query to clear updates.

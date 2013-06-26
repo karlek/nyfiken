@@ -39,12 +39,15 @@ const (
 
 // Paths to nyfiken files.
 var (
-	NyfikenRoot string
-	ConfigPath  string
-	PagesPath   string
-	CacheRoot   string
-	PrevRoot    string
-	UpdatesPath string
+	NyfikenRoot    string
+	ConfigPath     string
+	PagesPath      string
+	CacheRoot      string
+	PrevRoot       string
+	UpdatesPath    string
+	DebugRoot      string
+	DebugCacheRoot string
+	DebugPrevRoot  string
 )
 
 var (
@@ -115,9 +118,13 @@ func initialize() (err error) {
 	setNyfikenRoot()
 	ConfigPath = NyfikenRoot + "/config.ini"
 	PagesPath = NyfikenRoot + "/pages.ini"
+	UpdatesPath = NyfikenRoot + "/updates.gob"
+
 	CacheRoot = NyfikenRoot + "/cache/"
 	PrevRoot = NyfikenRoot + "/prev/"
-	UpdatesPath = NyfikenRoot + "/updates.gob"
+	DebugRoot = NyfikenRoot + "/debug/"
+	DebugCacheRoot = NyfikenRoot + "/debug/cache/"
+	DebugPrevRoot = NyfikenRoot + "/debug/prev/"
 
 	// Load uncleared updates from last execution.
 	err = LoadUpdates()
@@ -154,6 +161,39 @@ func initialize() (err error) {
 	}
 	if !found {
 		err := os.Mkdir(PrevRoot, DefaultFolderPerms)
+		if err != nil {
+			return errutil.Err(err)
+		}
+	}
+
+	found, err = osutil.Exists(DebugRoot)
+	if err != nil {
+		return errutil.Err(err)
+	}
+	if !found {
+		err := os.Mkdir(DebugRoot, DefaultFolderPerms)
+		if err != nil {
+			return errutil.Err(err)
+		}
+	}
+
+	found, err = osutil.Exists(DebugCacheRoot)
+	if err != nil {
+		return errutil.Err(err)
+	}
+	if !found {
+		err := os.Mkdir(DebugCacheRoot, DefaultFolderPerms)
+		if err != nil {
+			return errutil.Err(err)
+		}
+	}
+
+	found, err = osutil.Exists(DebugPrevRoot)
+	if err != nil {
+		return errutil.Err(err)
+	}
+	if !found {
+		err := os.Mkdir(DebugPrevRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}

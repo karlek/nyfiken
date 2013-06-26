@@ -70,6 +70,12 @@ func (p *Page) check() (err error) {
 	}
 	cachePathName := settings.CacheRoot + linuxPath + ".htm"
 
+	// Debug - no selection.
+	debug, err := htmlutil.RenderClean(r.Node)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
 	// Read in comparison.
 	buf, err := ioutil.ReadFile(cachePathName)
 	if err != nil {
@@ -94,6 +100,15 @@ func (p *Page) check() (err error) {
 			[]byte(selection),
 			settings.Global.FilePerms,
 		)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
+		// Debug
+		debugPrevPathName := settings.DebugPrevRoot + linuxPath + ".htm"
+
+		// Update the debug comparison file.
+		err = ioutil.WriteFile(debugPrevPathName, []byte(debug), settings.Global.FilePerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
@@ -147,9 +162,15 @@ func (p *Page) check() (err error) {
 				return errutil.Err(err)
 			}
 		}
-
 		// Update the comparison file.
 		err = ioutil.WriteFile(cachePathName, []byte(selection), settings.Global.FilePerms)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
+		debugCachePathName := settings.DebugCacheRoot + linuxPath + ".htm"
+		// Update the debug comparison file.
+		err = ioutil.WriteFile(debugCachePathName, []byte(debug), settings.Global.FilePerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
