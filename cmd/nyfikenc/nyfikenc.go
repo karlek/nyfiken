@@ -133,11 +133,6 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	if err != nil {
 		return errutil.Err(err)
 	}
-	err = cmd.Wait()
-	if err != nil {
-		return errutil.Err(err)
-	}
-
 	return nil
 }
 
