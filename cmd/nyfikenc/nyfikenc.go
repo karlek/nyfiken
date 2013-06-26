@@ -5,11 +5,14 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"os/exec"
 
+	"github.com/karlek/nyfiken/filename"
 	"github.com/karlek/nyfiken/ini"
 	"github.com/karlek/nyfiken/settings"
 	"github.com/mewkiz/pkg/bufioutil"
@@ -135,6 +138,29 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	if err != nil {
 		return errutil.Err(err)
 	}
+
+	caches, err := ioutil.ReadDir(settings.CacheRoot)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	for _, cache := range caches {
+		fname, err := filename.Encode(cache.Name())
+		if err != nil {
+			return err
+		}
+		cacheFile, err := os.Open(settings.CacheRoot + fname)
+		if err != nil {
+			return err
+		}
+		prevFile, err := os.Create(settings.PrevRoot + fname)
+		if err != nil {
+			return err
+		}
+
+		io.Copy(prevFile, cacheFile)
+	}
+
 	return nil
 }
 

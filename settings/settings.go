@@ -43,6 +43,7 @@ var (
 	ConfigPath  string
 	PagesPath   string
 	CacheRoot   string
+	PrevRoot    string
 	UpdatesPath string
 )
 
@@ -115,6 +116,7 @@ func initialize() (err error) {
 	ConfigPath = NyfikenRoot + "/config.ini"
 	PagesPath = NyfikenRoot + "/pages.ini"
 	CacheRoot = NyfikenRoot + "/cache/"
+	PrevRoot = NyfikenRoot + "/prev/"
 	UpdatesPath = NyfikenRoot + "/updates.gob"
 
 	// Load uncleared updates from last execution.
@@ -141,6 +143,17 @@ func initialize() (err error) {
 	}
 	if !found {
 		err := os.Mkdir(CacheRoot, DefaultFolderPerms)
+		if err != nil {
+			return errutil.Err(err)
+		}
+	}
+
+	found, err = osutil.Exists(PrevRoot)
+	if err != nil {
+		return errutil.Err(err)
+	}
+	if !found {
+		err := os.Mkdir(PrevRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
