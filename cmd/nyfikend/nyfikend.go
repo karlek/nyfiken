@@ -120,6 +120,7 @@ func watchConfig(watcher *fsnotify.Watcher) {
 					// Read settings from config file.
 					err = ini.ReadSettings(settings.ConfigPath)
 				}
+				forceUpdate()
 			}
 		case err = <-watcher.Error:
 			// Will fatal after select statement
@@ -165,6 +166,36 @@ func clean() (err error) {
 			return err
 		}
 	}
+
+	return nil
+}
+
+// Check all pages immediately
+func forceUpdate() (err error) {
+	pages, err := ini.ReadPages(settings.PagesPath)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	// A channel in which errors are sent from p.Check()
+	errChan := make(chan error)
+
+	// The number of checks currently taking place
+	var numChecks int
+	for _, p := range pages {
+		// Start a go-routine to check if the page has been updated.
+		go p.Check(errChan)
+		numChecks++
+	}
+
+	// For each check that took place, listen if any check returned an error
+	go func(ch chan error, nChecks int) {
+		for i := 0; i < nChecks; i++ {
+			if err := <-ch; err != nil {
+				log.Println(errutil.Err(err))
+			}
+		}
+	}(errChan, numChecks)
 
 	return nil
 }
