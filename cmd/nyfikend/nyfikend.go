@@ -65,7 +65,11 @@ func nyfikend() (err error) {
 		return errutil.Err(err)
 	}
 	go watchConfig(watcher)
-	err = watcher.Watch(settings.NyfikenRoot)
+	err = watcher.Watch(settings.ConfigPath)
+	if err != nil {
+		return errutil.Err(err)
+	}
+	err = watcher.Watch(settings.PagesPath)
 	if err != nil {
 		return errutil.Err(err)
 	}
