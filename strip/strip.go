@@ -66,7 +66,7 @@ func Scripts(doc *html.Node) {
 	f(doc)
 }
 
-// HTML removes HTML from an html.Node and returns a clean string.
+// HTML removes HTML tags from an html.Node and leaves the text.
 func HTML(doc *html.Node) {
 	var newSel string
 	var f func(node *html.Node, newSel *string)

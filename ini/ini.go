@@ -69,22 +69,26 @@ var (
 
 // Error messages.
 var (
-	ErrFieldNotExist          = "ini: field `%s` doesn't exist."
-	ErrNoSectionSettings      = "ini: no [" + sectionSettings + "] section found config.ini."
-	ErrNoSectionMail          = "ini: no [" + sectionMail + "] section found in config.ini."
-	ErrInvalidMailAddress     = "ini: invalid mail: `%s`; correct syntax -> `name@domain.tld`."
-	ErrInvalidHeader          = "ini: invalid header: `%s`; correct syntax -> `HeaderName: Value`."
-	ErrInvalidStripFunction   = "ini: invalid strip function: `%s`."
-	ErrInvalidRandInterval    = "ini: invalid random interval: %s; correct syntax -> `duration duration`."
-	ErrMailAddressNotFound    = "ini: global receiving mail required."
-	ErrMailAuthServerNotFound = "ini: sending mail authorization server required."
-	ErrMailOutServerNotFound  = "ini: sending mail outgoing server required."
-	ErrInvalidListDeclaration = "ini: use `<` instead of `=` for list values."
+	errFieldNotExist          = "ini: field `%s` doesn't exist."
+	errNoSectionSettings      = "ini: no [" + sectionSettings + "] section found config.ini."
+	errNoSectionMail          = "ini: no [" + sectionMail + "] section found in config.ini."
+	errInvalidMailAddress     = "ini: invalid mail: `%s`; correct syntax -> `name@domain.tld`."
+	errInvalidHeader          = "ini: invalid header: `%s`; correct syntax -> `HeaderName: Value`."
+	errInvalidStripFunction   = "ini: invalid strip function: `%s`."
+	errInvalidRandInterval    = "ini: invalid random interval: %s; correct syntax -> `duration duration`."
+	errMailAddressNotFound    = "ini: global receiving mail required."
+	errMailAuthServerNotFound = "ini: sending mail authorization server required."
+	errMailOutServerNotFound  = "ini: sending mail outgoing server required."
+	errInvalidListDeclaration = "ini: use `<` instead of `=` for list values."
+)
 
-	StripFunctions = map[string]bool{
+// Whitelist of allowed strip functions.
+var (
+	stripFunctions = map[string]bool{
 		"html":    true,
 		"attrs":   true,
 		"numbers": true,
+		"scripts": true,
 	}
 )
 
@@ -136,7 +140,7 @@ func ReadSettings(configPath string) (err error) {
 func parseSettings(config ini.Section) (err error) {
 	for fieldName, _ := range config {
 		if _, found := settingsFields[fieldName]; !found {
-			return errutil.NewNoPosf(ErrFieldNotExist, fieldName)
+			return errutil.NewNoPosf(errFieldNotExist, fieldName)
 		}
 	}
 
@@ -165,16 +169,16 @@ func parseSettings(config ini.Section) (err error) {
 func parseMail(mail ini.Section) (err error) {
 	for fieldName, _ := range mail {
 		if _, found := mailFields[fieldName]; !found {
-			return errutil.NewNoPosf(ErrFieldNotExist, fieldName)
+			return errutil.NewNoPosf(errFieldNotExist, fieldName)
 		}
 	}
 
 	// Set global sender mail.
 	settings.Global.SenderMail.Address = mail.S(fieldSendMail, "")
 	if settings.Global.SenderMail.Address == "" {
-		return errutil.NewNoPosf(ErrMailAddressNotFound)
+		return errutil.NewNoPosf(errMailAddressNotFound)
 	} else if !strings.Contains(settings.Global.SenderMail.Address, "@") {
-		return errutil.NewNoPosf(ErrInvalidMailAddress, settings.Global.SenderMail.Address)
+		return errutil.NewNoPosf(errInvalidMailAddress, settings.Global.SenderMail.Address)
 	}
 
 	// Set global sender mail password.
@@ -183,21 +187,21 @@ func parseMail(mail ini.Section) (err error) {
 	// Set global sender authorization server.
 	settings.Global.SenderMail.AuthServer = mail.S(fieldSendAuthServer, "")
 	if settings.Global.SenderMail.AuthServer == "" {
-		return errutil.NewNoPosf(ErrMailAuthServerNotFound)
+		return errutil.NewNoPosf(errMailAuthServerNotFound)
 	}
 
 	// Set global sender mail outgoing server.
 	settings.Global.SenderMail.OutServer = mail.S(fieldSendOutServer, "")
 	if settings.Global.SenderMail.OutServer == "" {
-		return errutil.NewNoPosf(ErrMailOutServerNotFound)
+		return errutil.NewNoPosf(errMailOutServerNotFound)
 	}
 
 	// Set global receive mail.
 	settings.Global.RecvMail = mail.S(fieldRecvMail, "")
 	if settings.Global.RecvMail == "" {
-		return errutil.NewNoPosf(ErrMailAddressNotFound)
+		return errutil.NewNoPosf(errMailAddressNotFound)
 	} else if !strings.Contains(settings.Global.RecvMail, "@") {
-		return errutil.NewNoPosf(ErrInvalidMailAddress, settings.Global.RecvMail)
+		return errutil.NewNoPosf(errInvalidMailAddress, settings.Global.RecvMail)
 	}
 
 	return nil
@@ -226,7 +230,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 
 		for fieldName, _ := range section {
 			if _, found := siteFields[fieldName]; !found {
-				return nil, errutil.NewNoPosf(ErrFieldNotExist, fieldName)
+				return nil, errutil.NewNoPosf(errFieldNotExist, fieldName)
 			}
 		}
 
@@ -263,7 +267,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		// Set individual mail address.
 		pageSettings.RecvMail = section.S(fieldRecvMail, settings.Global.RecvMail)
 		if pageSettings.RecvMail != "" && !strings.Contains(pageSettings.RecvMail, "@") {
-			return nil, errutil.NewNoPosf(ErrInvalidMailAddress, pageSettings.RecvMail)
+			return nil, errutil.NewNoPosf(errInvalidMailAddress, pageSettings.RecvMail)
 		}
 
 		// Set individual header.
@@ -274,7 +278,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 				keyVal := strings.SplitN(header, ":", 2)
 				m[strings.TrimSpace(keyVal[0])] = strings.TrimSpace(keyVal[1])
 			} else {
-				return nil, errutil.NewNoPosf(ErrInvalidHeader, header)
+				return nil, errutil.NewNoPosf(errInvalidHeader, header)
 			}
 		}
 		pageSettings.Header = m
@@ -283,12 +287,12 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 		pageSettings.StripFuncs = section.List(fieldStrip)
 		if pageSettings.StripFuncs == nil {
 			if _, found := section[fieldStrip]; found {
-				return nil, errutil.NewNoPosf(ErrInvalidListDeclaration)
+				return nil, errutil.NewNoPosf(errInvalidListDeclaration)
 			}
 		}
 		for _, stripFunc := range pageSettings.StripFuncs {
-			if _, found := StripFunctions[stripFunc]; !found {
-				return nil, errutil.NewNoPosf(ErrInvalidStripFunction, stripFunc)
+			if _, found := stripFunctions[stripFunc]; !found {
+				return nil, errutil.NewNoPosf(errInvalidStripFunction, stripFunc)
 			}
 		}
 		p.Settings = pageSettings

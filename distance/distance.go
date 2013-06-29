@@ -1,5 +1,5 @@
-// Package strmeter measures the distances between two strings.
-package strmetr
+// Package distance measures the distances between two strings.
+package distance
 
 // An ad-hoc function for a percentage difference between two strings.
 func Approx(str1, str2 string) float64 {

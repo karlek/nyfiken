@@ -14,11 +14,11 @@ import (
 	"code.google.com/p/cascadia"
 	"code.google.com/p/go.net/html"
 	"code.google.com/p/mahonia"
+	"github.com/karlek/nyfiken/distance"
 	"github.com/karlek/nyfiken/filename"
 	"github.com/karlek/nyfiken/mail"
 	"github.com/karlek/nyfiken/settings"
 	"github.com/karlek/nyfiken/strip"
-	"github.com/karlek/nyfiken/strmetr"
 	"github.com/mewkiz/pkg/errutil"
 	"github.com/mewkiz/pkg/htmlutil"
 )
@@ -64,7 +64,8 @@ func (p *Page) check() (err error) {
 	}
 
 	// File name is a escaped URL in a cache folder.
-	linuxPath, err := filename.Encode(p.ReqUrl.String())
+	urlAsFilename := p.ReqUrl.Host + p.ReqUrl.Path + p.ReqUrl.RawQuery
+	linuxPath, err := filename.Encode(urlAsFilename)
 	if err != nil {
 		return errutil.Err(err)
 	}
@@ -121,7 +122,7 @@ func (p *Page) check() (err error) {
 	}
 
 	// The distance between to strings in percentage.
-	dist := strmetr.Approx(string(buf), selection)
+	dist := distance.Approx(string(buf), selection)
 
 	// If the distance is within the threshold level, i.e if the check was a
 	// match.

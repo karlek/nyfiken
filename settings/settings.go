@@ -51,8 +51,7 @@ var (
 )
 
 var (
-	// Updates is a collection of all pages which have been determined to have
-	// changed since the last check.
+	// Updates is a map of all pages which have been updated.
 	Updates map[Update]bool
 
 	// Settings which will be used unless overwritten by site-specific settings.
@@ -61,6 +60,7 @@ var (
 		FilePerms: DefaultFilePerms,
 		PortNum:   DefaultPortNum,
 	}
+
 	// When Verbose is true, enable verbose output.
 	Verbose bool
 )
@@ -78,7 +78,7 @@ type Page struct {
 	Threshold  float64           // Percentage of accepted deviation from last scrape.
 	RecvMail   string            // Mail address to send a notification when a page has been updated.
 	Regexp     string            // Regular expression to further specify what to select.
-	Negexp     string            // Removes with regular expression everything that matches.
+	Negexp     string            // Everything that matches this regular expression will be removed.
 	StripFuncs []string          // Strip functions to further specify what to select.
 	Header     map[string]string // HTTP headers to request targeted site with.
 	Selection  string            // CSS selector string to specify what to select.
