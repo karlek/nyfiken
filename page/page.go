@@ -106,9 +106,17 @@ func (p *Page) check() (err error) {
 		}
 
 		// Debug
-		debugPrevPathName := settings.DebugPrevRoot + linuxPath + ".htm"
+		debugCachePathName := settings.DebugCacheRoot + linuxPath + ".htm"
 
 		// Update the debug comparison file.
+		err = ioutil.WriteFile(debugCachePathName, []byte(debug), settings.Global.FilePerms)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
+		debugPrevPathName := settings.DebugPrevRoot + linuxPath + ".htm"
+
+		// Update the debug prev file.
 		err = ioutil.WriteFile(debugPrevPathName, []byte(debug), settings.Global.FilePerms)
 		if err != nil {
 			return errutil.Err(err)
