@@ -64,7 +64,7 @@ func nyfikend() (err error) {
 	if err != nil {
 		return errutil.Err(err)
 	}
-	go watchConfig(watcher)
+	go errWrapWatchConfig(watcher)
 	err = watcher.Watch(settings.ConfigPath)
 	if err != nil {
 		return errutil.Err(err)
@@ -79,10 +79,10 @@ func nyfikend() (err error) {
 
 	var secondsElapsed float64
 	for ; ; secondsElapsed++ {
-		// A channel in which errors are sent from p.Check()
+		// A channel in which errors are sent from p.Check().
 		errChan := make(chan error)
 
-		// The number of checks currently taking place
+		// The number of checks currently taking place.
 		var numChecks int
 		for _, p := range pages {
 			// If the seconds elapsed modulo the duration of the interval in
@@ -95,7 +95,8 @@ func nyfikend() (err error) {
 			numChecks++
 		}
 
-		// For each check that took place, listen if any check returned an error
+		// For each check that took place, listen if any check returned an
+		// error.
 		go func(ch chan error, nChecks int) {
 			for i := 0; i < nChecks; i++ {
 				if err := <-ch; err != nil {
@@ -111,95 +112,76 @@ func nyfikend() (err error) {
 }
 
 // Reads config files only when they are modified.
-func watchConfig(watcher *fsnotify.Watcher) {
-	var err error
+func errWrapWatchConfig(watcher *fsnotify.Watcher) {
+	err := watchConfig(watcher)
+	if err != nil {
+		log.Fatalln(errutil.Err(err))
+	}
+}
+
+func watchConfig(watcher *fsnotify.Watcher) (err error) {
 	for {
 		select {
 		case ev := <-watcher.Event:
 			if ev != nil {
-				if ev.Name == settings.PagesPath {
-					// Retrieve an array of pages from INI file.
-					pages, err = ini.ReadPages(settings.PagesPath)
-				} else if ev.Name == settings.ConfigPath {
+				if ev.Name == settings.ConfigPath {
 					// Read settings from config file.
 					err = ini.ReadSettings(settings.ConfigPath)
+					if err != nil {
+						return errutil.Err(err)
+					}
 				}
-				forceUpdate()
+				// Retrieve an array of pages from INI file.
+				pages, err := ini.ReadPages(settings.PagesPath)
+				if err != nil {
+					return errutil.Err(err)
+				}
+				err = page.ForceUpdate(pages)
+				if err != nil {
+					return errutil.Err(err)
+				}
 			}
 		case err = <-watcher.Error:
-			// Will fatal after select statement
-		}
-		if err != nil {
-			log.Fatalln(errutil.Err(err))
+			if err != nil {
+				return errutil.Err(err)
+			}
 		}
 	}
 }
 
 // clean removes old cache files from cache root.
 func clean() (err error) {
+	// Get a list of all pages.
 	pages, err := ini.ReadPages(settings.PagesPath)
 	if err != nil {
 		return errutil.Err(err)
 	}
 
+	// Get a list of all cached pages.
 	caches, err := ioutil.ReadDir(settings.CacheRoot)
 	if err != nil {
 		return errutil.Err(err)
 	}
 
-	var willBeRemoved []string
 	for _, cache := range caches {
 		remove := true
 		for _, p := range pages {
-			fname, err := filename.Encode(p.ReqUrl.String())
+			pageName, err := filename.Encode(p.UrlAsFilename())
 			if err != nil {
 				return errutil.Err(err)
 			}
-			if cache.Name() == fname+".htm" {
+			if cache.Name() == pageName+".htm" {
 				remove = false
-				continue
+				break
 			}
 		}
 		if remove {
-			willBeRemoved = append(willBeRemoved, settings.CacheRoot+cache.Name())
-		}
-	}
-	for _, rm := range willBeRemoved {
-		err = os.Remove(rm)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Check all pages immediately
-func forceUpdate() (err error) {
-	pages, err := ini.ReadPages(settings.PagesPath)
-	if err != nil {
-		return errutil.Err(err)
-	}
-
-	// A channel in which errors are sent from p.Check()
-	errChan := make(chan error)
-
-	// The number of checks currently taking place
-	var numChecks int
-	for _, p := range pages {
-		// Start a go-routine to check if the page has been updated.
-		go p.Check(errChan)
-		numChecks++
-	}
-
-	// For each check that took place, listen if any check returned an error
-	go func(ch chan error, nChecks int) {
-		for i := 0; i < nChecks; i++ {
-			if err := <-ch; err != nil {
-				log.Println(errutil.Err(err))
+			err = os.Remove(settings.CacheRoot + cache.Name())
+			if err != nil {
+				return err
 			}
 		}
-	}(errChan, numChecks)
+	}
 
 	return nil
 }

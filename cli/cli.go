@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/karlek/nyfiken/ini"
+	"github.com/karlek/nyfiken/page"
 	"github.com/karlek/nyfiken/settings"
 	"github.com/mewkiz/pkg/bufioutil"
 	"github.com/mewkiz/pkg/errutil"
@@ -62,50 +63,21 @@ func takeInput(conn net.Conn) (err error) {
 		// Do something with the query
 		switch query {
 		case settings.QueryUpdates:
-			// Will write to network.
-			enc := gob.NewEncoder(conn)
-
 			// Encode (send) the value.
-			err = enc.Encode(settings.Updates)
+			err = gob.NewEncoder(conn).Encode(settings.Updates)
 		case settings.QueryClearAll:
 			settings.Updates = make(map[settings.Update]bool)
 			err = settings.SaveUpdates()
 		case settings.QueryForceRecheck:
-			err = forceUpdate()
+			pages, err := ini.ReadPages(settings.PagesPath)
+			if err != nil {
+				return errutil.Err(err)
+			}
+			err = page.ForceUpdate(pages)
 		}
 		if err != nil {
 			return errutil.Err(err)
 		}
 	}
-	return nil
-}
-
-// Check all pages immediately
-func forceUpdate() (err error) {
-	pages, err := ini.ReadPages(settings.PagesPath)
-	if err != nil {
-		return errutil.Err(err)
-	}
-
-	// A channel in which errors are sent from p.Check()
-	errChan := make(chan error)
-
-	// The number of checks currently taking place
-	var numChecks int
-	for _, p := range pages {
-		// Start a go-routine to check if the page has been updated.
-		go p.Check(errChan)
-		numChecks++
-	}
-
-	// For each check that took place, listen if any check returned an error
-	go func(ch chan error, nChecks int) {
-		for i := 0; i < nChecks; i++ {
-			if err := <-ch; err != nil {
-				log.Println(errutil.Err(err))
-			}
-		}
-	}(errChan, numChecks)
-
 	return nil
 }

@@ -4,6 +4,7 @@ package page
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,6 +29,10 @@ import (
 type Page struct {
 	ReqUrl   *url.URL
 	Settings settings.Page
+}
+
+func (p *Page) UrlAsFilename() string {
+	return p.ReqUrl.Host + p.ReqUrl.Path + p.ReqUrl.RawQuery
 }
 
 // Check downloads and makes a specialized comparison with a previous check
@@ -63,12 +68,12 @@ func (p *Page) check() (err error) {
 		return errutil.Err(err)
 	}
 
-	// File name is a escaped URL in a cache folder.
-	urlAsFilename := p.ReqUrl.Host + p.ReqUrl.Path + p.ReqUrl.RawQuery
-	linuxPath, err := filename.Encode(urlAsFilename)
+	// Filename is the URL encoded and the protocol is stripped.
+	linuxPath, err := filename.Encode(p.UrlAsFilename())
 	if err != nil {
 		return errutil.Err(err)
 	}
+
 	cachePathName := settings.CacheRoot + linuxPath + ".htm"
 
 	// Debug - no selection.
@@ -291,7 +296,7 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 
 	// Loop through all the hits and render them to string.
 	for _, hit := range result {
-		selection += htmlutil.RenderToString(hit)
+		selection += htmlutil.RenderClean(hit)
 	}
 
 	// --- [ /CSS selection ] -------------------------------------------------/
@@ -357,4 +362,29 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 	// --- [ /Negexp ] --------------------------------------------------------/
 
 	return selection, nil
+}
+
+// Check all pages immediately
+func ForceUpdate(pages []*Page) (err error) {
+	// A channel in which errors are sent from p.Check()
+	errChan := make(chan error)
+
+	// The number of checks currently taking place
+	var numChecks int
+	for _, p := range pages {
+		// Start a go-routine to check if the page has been updated.
+		go p.Check(errChan)
+		numChecks++
+	}
+
+	// For each check that took place, listen if any check returned an error
+	go func(ch chan error, nChecks int) {
+		for i := 0; i < nChecks; i++ {
+			if err := <-ch; err != nil {
+				log.Println(errutil.Err(err))
+			}
+		}
+	}(errChan, numChecks)
+
+	return nil
 }
