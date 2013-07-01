@@ -138,7 +138,7 @@ func ReadSettings(configPath string) (err error) {
 
 // Parse ini settings section to global setting.
 func parseSettings(config ini.Section) (err error) {
-	for fieldName, _ := range config {
+	for fieldName := range config {
 		if _, found := settingsFields[fieldName]; !found {
 			return errutil.NewNoPosf(errFieldNotExist, fieldName)
 		}
@@ -167,7 +167,7 @@ func parseSettings(config ini.Section) (err error) {
 
 // Parse ini mail section to global setting.
 func parseMail(mail ini.Section) (err error) {
-	for fieldName, _ := range mail {
+	for fieldName := range mail {
 		if _, found := mailFields[fieldName]; !found {
 			return errutil.NewNoPosf(errFieldNotExist, fieldName)
 		}
@@ -228,7 +228,7 @@ func ReadPages(pagesPath string) (pages []*page.Page, err error) {
 			fmt.Println("[o] Watching:", name)
 		}
 
-		for fieldName, _ := range section {
+		for fieldName := range section {
 			if _, found := siteFields[fieldName]; !found {
 				return nil, errutil.NewNoPosf(errFieldNotExist, fieldName)
 			}

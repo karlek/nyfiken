@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Nyfikend is a daemon which checks if pages have been updated and notifies the
 // user.
 package main

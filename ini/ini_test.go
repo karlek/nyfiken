@@ -59,7 +59,7 @@ func TestReadPages(t *testing.T) {
 	}
 
 	expected := []*page.Page{
-		&page.Page{
+		{
 			ReqUrl: reqUrl,
 			Settings: settings.Page{
 				Interval:  3 * time.Minute,
@@ -78,7 +78,7 @@ func TestReadPages(t *testing.T) {
 				},
 			},
 		},
-		&page.Page{
+		{
 			ReqUrl: anotherReqUrl,
 			Settings: settings.Page{
 				Interval:  settings.Global.Interval,
