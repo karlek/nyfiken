@@ -102,7 +102,7 @@ func nyfikenc() (err error) {
 		return nil
 	}
 
-	for up, _ := range ups {
+	for up := range ups {
 		fmt.Printf("%s\n", up)
 	}
 
@@ -135,7 +135,7 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 
 	var arguments []string
 	// Loop through all updates and open them with the browser
-	for up, _ := range ups {
+	for up := range ups {
 		arguments = append(arguments, up)
 	}
 	cmd := exec.Command(settings.Global.Browser, arguments...)
@@ -153,7 +153,7 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		return errutil.Err(err)
 	}
 
-	for up, _ := range ups {
+	for up := range ups {
 		fname, err := filename.Encode(up)
 		if err != nil {
 			return errutil.Err(err)
