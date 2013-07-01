@@ -296,7 +296,11 @@ func (p *Page) makeSelection(htmlNode *html.Node) (selection string, err error) 
 
 	// Loop through all the hits and render them to string.
 	for _, hit := range result {
-		selection += htmlutil.RenderClean(hit)
+		s, err := htmlutil.RenderClean(hit)
+		if err != nil {
+			return "", errutil.Err(err)
+		}
+		selection += s
 	}
 
 	// --- [ /CSS selection ] -------------------------------------------------/
