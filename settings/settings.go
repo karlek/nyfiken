@@ -52,7 +52,7 @@ var (
 
 var (
 	// Updates is a map of all pages which have been updated.
-	Updates map[Update]bool
+	Updates map[string]bool
 
 	// Settings which will be used unless overwritten by site-specific settings.
 	Global = Prog{
@@ -64,12 +64,6 @@ var (
 	// When Verbose is true, enable verbose output.
 	Verbose bool
 )
-
-// Update is an URL which have been determined to have been changed since last
-// check.
-type Update struct {
-	ReqUrl string
-}
 
 // Page is a collection of specialized settings used to eliminate
 // false-positives. Page settings override program global settings.
@@ -112,7 +106,7 @@ func init() {
 }
 
 func initialize() (err error) {
-	Updates = make(map[Update]bool)
+	Updates = make(map[string]bool)
 
 	// Will set nyfiken root differently depending on operating system.
 	setNyfikenRoot()

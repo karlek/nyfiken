@@ -106,8 +106,6 @@ func nyfikend() (err error) {
 
 		time.Sleep(1 * time.Second)
 	}
-
-	return nil
 }
 
 // Reads config files only when they are modified.

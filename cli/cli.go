@@ -68,7 +68,7 @@ func takeInput(conn net.Conn) (err error) {
 			// Encode (send) the value.
 			err = enc.Encode(settings.Updates)
 		case settings.QueryClearAll:
-			settings.Updates = make(map[settings.Update]bool)
+			settings.Updates = make(map[string]bool)
 			err = settings.SaveUpdates()
 		case settings.QueryForceRecheck:
 			err = forceUpdate()

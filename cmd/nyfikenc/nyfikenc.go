@@ -103,7 +103,7 @@ func nyfikenc() (err error) {
 	}
 
 	for up, _ := range ups {
-		fmt.Printf("%s\n", up.ReqUrl)
+		fmt.Printf("%s\n", up)
 	}
 
 	return nil
@@ -136,7 +136,7 @@ func readAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	var arguments []string
 	// Loop through all updates and open them with the browser
 	for up, _ := range ups {
-		arguments = append(arguments, up.ReqUrl)
+		arguments = append(arguments, up)
 	}
 	cmd := exec.Command(settings.Global.Browser, arguments...)
 	err = cmd.Start()
@@ -154,7 +154,7 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	}
 
 	for up, _ := range ups {
-		fname, err := filename.Encode(up.ReqUrl)
+		fname, err := filename.Encode(up)
 		if err != nil {
 			return errutil.Err(err)
 		}
@@ -216,7 +216,7 @@ func force(bw *bufioutil.Writer) (err error) {
 }
 
 // Receive updates from nyfikend.
-func getUpdates(bw *bufioutil.Writer, conn net.Conn) (ups map[settings.Update]bool, err error) {
+func getUpdates(bw *bufioutil.Writer, conn net.Conn) (ups map[string]bool, err error) {
 	// Ask for updates.
 	_, err = bw.WriteLine(settings.QueryUpdates)
 	if err != nil {

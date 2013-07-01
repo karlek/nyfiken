@@ -135,7 +135,7 @@ func (p *Page) check() (err error) {
 	// If the distance is within the threshold level, i.e if the check was a
 	// match.
 	if dist > p.Settings.Threshold {
-		u := settings.Update{p.ReqUrl.String()}
+		u := p.ReqUrl.String()
 		settings.Updates[u] = true
 
 		if settings.Verbose {
