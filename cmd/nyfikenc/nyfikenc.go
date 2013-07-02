@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"os/exec"
 
@@ -154,7 +155,13 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 	}
 
 	for up := range ups {
-		fname, err := filename.Encode(up)
+		u, err := url.Parse(up)
+		if err != nil {
+			return errutil.Err(err)
+		}
+
+		urlAsFilename := u.Host + u.Path + u.RawQuery
+		fname, err := filename.Encode(urlAsFilename)
 		if err != nil {
 			return errutil.Err(err)
 		}
