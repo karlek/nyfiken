@@ -1,0 +1,31 @@
+==================
+WARNING: DATA RACE
+Write by goroutine 18:
+  runtime.mapassign1()
+      /home/_/go/src/pkg/runtime/hashmap.c:1290 +0x0
+  github.com/karlek/nyfiken/page.(*Page).check()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/page/page.go:148 +0x1041
+  github.com/karlek/nyfiken/page.(*Page).Check()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/page/page.go:43 +0x34
+
+Previous write by goroutine 25:
+  runtime.mapassign1()
+      /home/_/go/src/pkg/runtime/hashmap.c:1290 +0x0
+  github.com/karlek/nyfiken/page.(*Page).check()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/page/page.go:148 +0x1041
+  github.com/karlek/nyfiken/page.(*Page).Check()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/page/page.go:43 +0x34
+
+Goroutine 18 (running) created at:
+  main.nyfikend()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/cmd/nyfikend/nyfikend.go:94 +0x4fc
+  main.main()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/cmd/nyfikend/nyfikend.go:42 +0x30
+
+Goroutine 25 (running) created at:
+  main.nyfikend()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/cmd/nyfikend/nyfikend.go:94 +0x4fc
+  main.main()
+      /home/_/Dropbox/comp/coding/go/src/github.com/karlek/nyfiken/cmd/nyfikend/nyfikend.go:42 +0x30
+
+==================

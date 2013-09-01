@@ -3,6 +3,7 @@ package page
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,7 +55,7 @@ func (p *Page) check() (err error) {
 		error
 	}
 	select {
-	case r = <-p.errWrapDownload():
+	case r = <-errWrapDownload(p):
 		if r.error != nil {
 			return errutil.Err(r.error)
 		}
@@ -74,13 +75,25 @@ func (p *Page) check() (err error) {
 		return errutil.Err(err)
 	}
 
-	cachePathName := settings.CacheRoot + linuxPath + ".htm"
-
 	// Debug - no selection.
 	debug, err := htmlutil.RenderClean(r.Node)
 	if err != nil {
 		return errutil.Err(err)
 	}
+	// Update the debug comparison file.
+	debugCachePathName := settings.DebugCacheRoot + linuxPath + ".htm"
+	err = ioutil.WriteFile(debugCachePathName, []byte(debug), settings.Global.FilePerms)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	// If the selection is empty, the CSS selection is probably wrong so we will
+	// alert the user about this problem.
+	if len(selection) == 0 {
+		return errutil.NewNoPosf("Update was empty. URL: %s", p.ReqUrl)
+	}
+
+	cachePathName := settings.CacheRoot + linuxPath + ".htm"
 
 	// Read in comparison.
 	buf, err := ioutil.ReadFile(cachePathName)
@@ -99,10 +112,10 @@ func (p *Page) check() (err error) {
 			return errutil.Err(err)
 		}
 
-		prevPathName := settings.PrevRoot + linuxPath + ".htm"
+		readPathName := settings.ReadRoot + linuxPath + ".htm"
 		// If the page hasn't been checked before, create a new comparison file.
 		err = ioutil.WriteFile(
-			prevPathName,
+			readPathName,
 			[]byte(selection),
 			settings.Global.FilePerms,
 		)
@@ -110,19 +123,10 @@ func (p *Page) check() (err error) {
 			return errutil.Err(err)
 		}
 
-		// Debug
-		debugCachePathName := settings.DebugCacheRoot + linuxPath + ".htm"
-
-		// Update the debug comparison file.
-		err = ioutil.WriteFile(debugCachePathName, []byte(debug), settings.Global.FilePerms)
-		if err != nil {
-			return errutil.Err(err)
-		}
-
-		debugPrevPathName := settings.DebugPrevRoot + linuxPath + ".htm"
+		debugReadPathName := settings.DebugReadRoot + linuxPath + ".htm"
 
 		// Update the debug prev file.
-		err = ioutil.WriteFile(debugPrevPathName, []byte(debug), settings.Global.FilePerms)
+		err = ioutil.WriteFile(debugReadPathName, []byte(debug), settings.Global.FilePerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
@@ -147,12 +151,6 @@ func (p *Page) check() (err error) {
 			fmt.Println("[!] Updated:", p.ReqUrl.String())
 		}
 
-		// Save updates to file.
-		err = settings.SaveUpdates()
-		if err != nil {
-			return errutil.Err(err)
-		}
-
 		// If the page has a mail and all compulsory global mail settings are
 		// set, send a mail to notify the user about an update.
 		if p.Settings.RecvMail != "" &&
@@ -171,20 +169,20 @@ func (p *Page) check() (err error) {
 				return errutil.Err(err)
 			}
 
-			err = mail.Send(*p.ReqUrl, p.Settings.RecvMail, sel)
+			err = mail.Send(p.ReqUrl, p.Settings.RecvMail, sel)
 			if err != nil {
 				return errutil.Err(err)
 			}
+			delete(settings.Updates, u)
 		}
-		// Update the comparison file.
-		err = ioutil.WriteFile(cachePathName, []byte(selection), settings.Global.FilePerms)
+		// Save updates to file.
+		err = settings.SaveUpdates()
 		if err != nil {
 			return errutil.Err(err)
 		}
 
-		debugCachePathName := settings.DebugCacheRoot + linuxPath + ".htm"
-		// Update the debug comparison file.
-		err = ioutil.WriteFile(debugCachePathName, []byte(debug), settings.Global.FilePerms)
+		// Update the comparison file.
+		err = ioutil.WriteFile(cachePathName, []byte(selection), settings.Global.FilePerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
@@ -199,7 +197,7 @@ func (p *Page) check() (err error) {
 // An error wrapping convenience function for p.download() used because of
 // timeout implementation.
 // Credits to: Dave Cheney and ilyia (https://groups.google.com/forum/?fromgroups=#!topic/golang-nuts/cTrBcyjqCxg)
-func (p *Page) errWrapDownload() <-chan struct {
+func errWrapDownload(p *Page) <-chan struct {
 	*html.Node
 	error
 } {
@@ -236,6 +234,11 @@ func (p *Page) download() (doc *html.Node, err error) {
 	// Do request and read response.
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		if serr, ok := err.(*url.Error); ok {
+			if serr.Err == io.EOF {
+				return nil, errutil.NewNoPosf("Update was empty: %s", p.ReqUrl)
+			}
+		}
 		return nil, errutil.Err(err)
 	}
 	defer resp.Body.Close()

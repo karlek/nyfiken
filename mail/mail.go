@@ -11,7 +11,7 @@ import (
 
 // Send sends a mail to a mail address with the contents of the checked page and
 // the URL to the checked page.
-func Send(pageUrl url.URL, receivingMail string, body string) (err error) {
+func Send(pageUrl *url.URL, receivingMail string, body string) (err error) {
 	// Set up authentication information.
 	auth := smtp.PlainAuth(
 		"",

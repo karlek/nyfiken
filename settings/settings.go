@@ -43,11 +43,13 @@ var (
 	ConfigPath     string
 	PagesPath      string
 	CacheRoot      string
-	PrevRoot       string
+	ReadRoot       string
 	UpdatesPath    string
 	DebugRoot      string
-	DebugCacheRoot string
+	PrevRoot       string
 	DebugPrevRoot  string
+	DebugCacheRoot string
+	DebugReadRoot  string
 )
 
 var (
@@ -115,10 +117,10 @@ func initialize() (err error) {
 	UpdatesPath = NyfikenRoot + "/updates.gob"
 
 	CacheRoot = NyfikenRoot + "/cache/"
-	PrevRoot = NyfikenRoot + "/prev/"
+	PrevRoot = NyfikenRoot + "/read/"
 	DebugRoot = NyfikenRoot + "/debug/"
 	DebugCacheRoot = NyfikenRoot + "/debug/cache/"
-	DebugPrevRoot = NyfikenRoot + "/debug/prev/"
+	DebugPrevRoot = NyfikenRoot + "/debug/read/"
 
 	// Load uncleared updates from last execution.
 	err = LoadUpdates()

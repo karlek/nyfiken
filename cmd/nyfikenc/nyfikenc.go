@@ -171,13 +171,13 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 			return errutil.Err(err)
 		}
 		defer cacheFile.Close()
-		prevFile, err := os.Create(settings.PrevRoot + fname + ".htm")
+		readFile, err := os.Create(settings.ReadRoot + fname + ".htm")
 		if err != nil {
 			return errutil.Err(err)
 		}
-		defer prevFile.Close()
+		defer readFile.Close()
 
-		_, err = io.Copy(prevFile, cacheFile)
+		_, err = io.Copy(readFile, cacheFile)
 		if err != nil {
 			return errutil.Err(err)
 		}
@@ -188,13 +188,13 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 			return errutil.Err(err)
 		}
 		defer cacheFile.Close()
-		debugPrevFile, err := os.Create(settings.DebugPrevRoot + fname + ".htm")
+		debugReadFile, err := os.Create(settings.DebugReadRoot + fname + ".htm")
 		if err != nil {
 			return errutil.Err(err)
 		}
-		defer prevFile.Close()
+		defer readFile.Close()
 
-		_, err = io.Copy(debugPrevFile, debugCacheFile)
+		_, err = io.Copy(debugReadFile, debugCacheFile)
 		if err != nil {
 			return errutil.Err(err)
 		}
