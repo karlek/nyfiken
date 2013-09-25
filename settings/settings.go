@@ -46,8 +46,6 @@ var (
 	ReadRoot       string
 	UpdatesPath    string
 	DebugRoot      string
-	PrevRoot       string
-	DebugPrevRoot  string
 	DebugCacheRoot string
 	DebugReadRoot  string
 )
@@ -117,10 +115,10 @@ func initialize() (err error) {
 	UpdatesPath = NyfikenRoot + "/updates.gob"
 
 	CacheRoot = NyfikenRoot + "/cache/"
-	PrevRoot = NyfikenRoot + "/read/"
+	ReadRoot = NyfikenRoot + "/read/"
 	DebugRoot = NyfikenRoot + "/debug/"
 	DebugCacheRoot = NyfikenRoot + "/debug/cache/"
-	DebugPrevRoot = NyfikenRoot + "/debug/read/"
+	DebugReadRoot = NyfikenRoot + "/debug/read/"
 
 	// Load uncleared updates from last execution.
 	err = LoadUpdates()
@@ -151,12 +149,12 @@ func initialize() (err error) {
 		}
 	}
 
-	found, err = osutil.Exists(PrevRoot)
+	found, err = osutil.Exists(ReadRoot)
 	if err != nil {
 		return errutil.Err(err)
 	}
 	if !found {
-		err := os.Mkdir(PrevRoot, DefaultFolderPerms)
+		err := os.Mkdir(ReadRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
@@ -184,12 +182,12 @@ func initialize() (err error) {
 		}
 	}
 
-	found, err = osutil.Exists(DebugPrevRoot)
+	found, err = osutil.Exists(DebugReadRoot)
 	if err != nil {
 		return errutil.Err(err)
 	}
 	if !found {
-		err := os.Mkdir(DebugPrevRoot, DefaultFolderPerms)
+		err := os.Mkdir(DebugReadRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
