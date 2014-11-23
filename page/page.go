@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"code.google.com/p/cascadia"
-	"code.google.com/p/go.net/html"
 	"code.google.com/p/mahonia"
 	"github.com/karlek/nyfiken/distance"
 	"github.com/karlek/nyfiken/filename"
@@ -23,6 +22,7 @@ import (
 	"github.com/karlek/nyfiken/strip"
 	"github.com/mewkiz/pkg/errutil"
 	"github.com/mewkiz/pkg/htmlutil"
+	"golang.org/x/net/html"
 )
 
 // Page is a site which is checked for changes. It has specialized settings to

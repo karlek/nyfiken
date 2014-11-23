@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"code.google.com/p/go.net/html"
 	"github.com/karlek/nyfiken/settings"
+	"golang.org/x/net/html"
 )
 
 func TestNumber(t *testing.T) {

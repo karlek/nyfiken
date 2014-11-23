@@ -10,8 +10,8 @@ import (
 	"strings"
 	"unicode"
 
-	"code.google.com/p/go.net/html"
 	"github.com/karlek/nyfiken/settings"
+	"golang.org/x/net/html"
 )
 
 // Numbers removes numbers from all text nodes in an html.Node.
