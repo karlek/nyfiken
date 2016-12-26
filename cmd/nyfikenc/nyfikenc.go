@@ -58,7 +58,7 @@ func nyfikenc() (err error) {
 	conn, err := net.Dial("tcp", "localhost"+settings.Global.PortNum)
 	if err != nil {
 		if e, ok := err.(*net.OpError); ok {
-			if e.Err.Error() == "connection refused" {
+			if e.Err.Error() == "getsockopt: connection refused" {
 				return errutil.NewNoPos("nyfikenc: unable to connect to nyfikend. Please make sure that the daemon is running.")
 			}
 		} else {
