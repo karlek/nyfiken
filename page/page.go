@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"code.google.com/p/cascadia"
-	"code.google.com/p/mahonia"
+	"github.com/axgle/mahonia"
 	"github.com/karlek/nyfiken/distance"
 	"github.com/karlek/nyfiken/filename"
 	"github.com/karlek/nyfiken/mail"
