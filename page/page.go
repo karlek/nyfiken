@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"code.google.com/p/cascadia"
+	"github.com/andybalholm/cascadia"
 	"github.com/axgle/mahonia"
 	"github.com/karlek/nyfiken/distance"
 	"github.com/karlek/nyfiken/filename"
