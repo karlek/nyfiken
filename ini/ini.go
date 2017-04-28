@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jteeuwen/ini"
 	"github.com/karlek/nyfiken/page"
 	"github.com/karlek/nyfiken/settings"
+	"github.com/mewbak/ini"
 	"github.com/mewkiz/pkg/errutil"
 )
 
