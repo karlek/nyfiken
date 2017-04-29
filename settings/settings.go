@@ -127,66 +127,42 @@ func initialize() (err error) {
 	}
 
 	// Create a nyfiken config folder if it doesn't exist.
-	found, err := osutil.Exists(NyfikenRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-	if !found {
+	if !osutil.Exists(NyfikenRoot) {
 		err := os.Mkdir(NyfikenRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
 	}
 
-	found, err = osutil.Exists(CacheRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-	if !found {
+	if !osutil.Exists(CacheRoot) {
 		err := os.Mkdir(CacheRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
 	}
 
-	found, err = osutil.Exists(ReadRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-	if !found {
+	if !osutil.Exists(ReadRoot) {
 		err := os.Mkdir(ReadRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
 	}
 
-	found, err = osutil.Exists(DebugRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-	if !found {
+	if !osutil.Exists(DebugRoot) {
 		err := os.Mkdir(DebugRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
 	}
 
-	found, err = osutil.Exists(DebugCacheRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-	if !found {
+	if !osutil.Exists(DebugCacheRoot) {
 		err := os.Mkdir(DebugCacheRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
 		}
 	}
 
-	found, err = osutil.Exists(DebugReadRoot)
-	if err != nil {
-		return errutil.Err(err)
-	}
-	if !found {
+	if !osutil.Exists(DebugReadRoot) {
 		err := os.Mkdir(DebugReadRoot, DefaultFolderPerms)
 		if err != nil {
 			return errutil.Err(err)
