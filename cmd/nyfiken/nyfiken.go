@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/karlek/nyfiken/filename"
 	"github.com/karlek/nyfiken/ini"
@@ -154,6 +155,24 @@ func clearAll(bw *bufioutil.Writer, conn net.Conn) (err error) {
 		return errutil.Err(err)
 	}
 
+	if len(ups) == 0 {
+		fmt.Println("Sorry, no updates :(")
+		os.Exit(ErrNodata)
+		return nil
+	}
+	var ans string
+	for {
+		fmt.Print("Remove all updates? (y/N) ")
+		fmt.Scanf("%s\n", &ans)
+		ans = strings.ToLower(ans)
+		if ans == "n" || ans == "" {
+			return
+		} else if ans == "y" {
+			break
+		} else {
+			fmt.Println("Unknown command. Please enter y or n.")
+		}
+	}
 	for up := range ups {
 		u, err := url.Parse(up)
 		if err != nil {

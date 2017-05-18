@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/howeyc/fsnotify"
 	"github.com/karlek/nyfiken/cli"
 	"github.com/karlek/nyfiken/filename"
@@ -125,6 +126,11 @@ func watchConfig(watcher *fsnotify.Watcher) (err error) {
 		select {
 		case ev := <-watcher.Event:
 			if ev != nil {
+				if !ev.IsModify() {
+					logrus.Println(ev)
+					continue
+				}
+				logrus.Println(ev)
 				if ev.Name == settings.ConfigPath {
 					// Read settings from config file.
 					err = ini.ReadSettings(settings.ConfigPath)
