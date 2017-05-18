@@ -27,7 +27,7 @@ Nyfiken is a client which access the updated information from nyfikend. It can b
 
 Nyfiken communicates on port `5239` by default.
 
-Nyfikenc Usage
+Nyfiken Usage
 --------------
 ```fish
 $ nyfiken
