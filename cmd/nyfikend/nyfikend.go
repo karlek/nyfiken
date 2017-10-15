@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math"
 	"os"
 	"runtime"
 	"time"
@@ -89,7 +88,7 @@ func nyfikend() (err error) {
 		for _, p := range pages {
 			// If the seconds elapsed modulo the duration of the interval in
 			// seconds is equal to zero, the page should be checked.
-			if math.Mod(float64(secondsElapsed), p.Settings.Interval.Seconds()) != 0 {
+			if secondsElapsed%int(p.Settings.Interval.Seconds()) != 0 {
 				continue
 			}
 			// Start a go-routine to check if the page has been updated.

@@ -45,6 +45,10 @@ func (p *Page) Check(ch chan<- error) {
 
 // check is an non-exported function for better error handling.
 func (p *Page) check() (err error) {
+	if !time.Now().After(p.Settings.After) {
+		fmt.Println("[/] Not yet time (%s) for: %s\n", p.Settings.After, p.ReqUrl.String())
+		return nil
+	}
 	if settings.Verbose {
 		fmt.Println("[/] Downloading:", p.ReqUrl.String())
 	}
@@ -143,7 +147,7 @@ func (p *Page) check() (err error) {
 
 	// If the distance is within the threshold level, i.e if the check was a
 	// match.
-	if dist > p.Settings.Threshold {
+	if dist*100 > p.Settings.Threshold {
 		u := p.ReqUrl.String()
 		settings.Updates[u] = true
 

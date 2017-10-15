@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 
 	"github.com/karlek/nyfiken/filename"
@@ -25,13 +26,17 @@ const (
 )
 
 // command-line flags
-var flagRecheck bool
-var flagClearAll bool
-var flagReadAll bool
-var flagReadAndClearAll bool
+var (
+	flagList            bool
+	flagRecheck         bool
+	flagClearAll        bool
+	flagReadAll         bool
+	flagReadAndClearAll bool
+)
 
 func init() {
 	flag.BoolVar(&flagRecheck, "f", false, "forces a recheck.")
+	flag.BoolVar(&flagList, "l", false, "lists tracked pages.")
 	flag.BoolVar(&flagReadAll, "r", false, "read all updated pages in your browser.")
 	flag.BoolVar(&flagClearAll, "c", false, "will clear list of updated sites.")
 	flag.BoolVar(&flagReadAndClearAll, "rc", false, "read all updated pages in your browser and clear the list of updated sites.")
@@ -67,6 +72,23 @@ func nyfikenc() (err error) {
 		}
 	}
 	bw := bufioutil.NewWriter(conn)
+	if flagList {
+		pages, err := ini.ReadPages(settings.PagesPath)
+		if err != nil {
+			return err
+		}
+
+		sort.Slice(pages, func(i, j int) bool {
+			if pages[i].ReqUrl.String() != pages[j].ReqUrl.String() {
+				return pages[i].ReqUrl.String() < pages[j].ReqUrl.String()
+			}
+			return pages[i].ReqUrl.String() < pages[j].ReqUrl.String()
+		})
+		for _, p := range pages {
+			fmt.Println(p.ReqUrl)
+		}
+		return nil
+	}
 
 	// Command-line flag check
 	if flagRecheck ||

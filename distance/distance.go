@@ -12,9 +12,9 @@ func Approx(str1, str2 string) float64 {
 		sum2 += float64(chr)
 	}
 	if sum1 > sum2 {
-		return 100 - (float64(sum2/sum1) * 100)
+		return 1 - sum2/sum1
 	} else if sum2 > sum1 {
-		return 100 - (float64(sum1/sum2) * 100)
+		return 1 - sum1/sum2
 	}
 	return 0
 }

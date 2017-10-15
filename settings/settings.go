@@ -63,6 +63,9 @@ var (
 
 	// When Verbose is true, enable verbose output.
 	Verbose bool
+
+	// Default after
+	DefaultInterval = time.Now()
 )
 
 // Page is a collection of specialized settings used to eliminate
@@ -76,6 +79,7 @@ type Page struct {
 	StripFuncs []string          // Strip functions to further specify what to select.
 	Header     map[string]string // HTTP headers to request targeted site with.
 	Selection  string            // CSS selector string to specify what to select.
+	After      time.Time         // After this date nyfiken will start polling for updates.
 }
 
 // Prog is the program global settings which regards all pages unless

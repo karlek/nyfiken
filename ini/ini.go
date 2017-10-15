@@ -38,6 +38,7 @@ const (
 	fieldSleepStart     = "sleepstart"
 	fieldStrip          = "strip"
 	fieldThreshold      = "threshold"
+	fieldAfter          = "after"
 )
 
 var (
@@ -51,6 +52,7 @@ var (
 		fieldNegexp:    true,
 		fieldThreshold: true,
 		fieldHeader:    true,
+		fieldAfter:     true,
 	}
 	mailFields = map[string]bool{
 		fieldRecvMail:       true,
@@ -147,6 +149,14 @@ func parseSettings(config ini.Section) (err error) {
 	// Get time setting from INI.
 	// If interval setting wasn't found, default value is 1 minute
 	intervalStr := config.S(fieldInterval, settings.DefaultInterval.String())
+	// Parse string to duration.
+	settings.Global.Interval, err = time.ParseDuration(intervalStr)
+	if err != nil {
+		return errutil.Err(err)
+	}
+
+	// If after setting wasn't found, default value is today
+	intervalStr := config.S(fieldAfter, settings.DefaultAfter.String())
 	// Parse string to duration.
 	settings.Global.Interval, err = time.ParseDuration(intervalStr)
 	if err != nil {
